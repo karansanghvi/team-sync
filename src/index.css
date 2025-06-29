@@ -1,0 +1,149 @@
+:root {
+    font-family: "Poppins", sans-serif;
+    margin: 0;
+    height: 100vh;
+    background-color: #1e3c72;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+/* Reusable Components */
+
+.primary-button {
+  all: unset;
+  display: inline-block;
+  border-radius: 10px;
+  background-color: #007BFF;
+  color: white;
+  font-size: 30px;
+  font-weight: 600;
+  padding: 10px 50px;
+  margin-bottom: 5px;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  cursor: pointer;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 280px;
+  transition: all 0.3s ease-in-out;
+}
+
+.primary-button:hover {
+  background-color: #0056b3; 
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.title {
+    color: white;
+    font-weight: bold;
+    font-size: 50px;
+    margin: 80px 0 0 0
+}
+
+/* Home Page */
+
+.heroSection h1 {
+  font-size: 200px;
+  font-weight: bold;
+  text-align: center;
+  color: white;
+  margin-bottom: 0;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin-top: 20px;
+} 
+
+/* Login And Signup */
+.box {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 450px;
+  text-align: left;
+}
+
+.parent-box {
+    margin-top: 20px;
+}
+
+.parent-box-two {
+    margin-bottom: 20px;
+}
+
+.input-box {
+  background-color: #ffffff;  
+  color: #000000;              
+  border: none;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-top: 5px;
+  width: 92%;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  outline: none;
+  transition: border 0.3s ease;
+}
+
+.input-box::placeholder {
+    font-family: "Poppins", sans-serif;
+}
+
+.goToSignup {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.link {
+    text-decoration: none;
+    color: black;
+}
+
+.login-button {
+  all: unset;
+  display: flex;
+  border-radius: 10px;
+  background-color: #007BFF;
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+  padding: 10px 50px;
+  margin-bottom: 5px;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  cursor: pointer;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 180px;
+  transition: all 0.3s ease-in-out;
+}
+
+.login-button:hover {
+  background-color: #0056b3; 
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
