@@ -21,11 +21,10 @@ function Signup() {
         const { user } = await createUserWithEmailAndPassword(auth, emailAddress, password);
         console.log("User created:", user.email);
 
-        // Assign 'admin' role by default
         await setDoc(doc(db, 'users', user.uid), {
-        fullName,
-        email: emailAddress,
-        role: 'admin'
+            fullName,
+            email: emailAddress,
+            role: 'admin'
         });
 
         console.log("Admin role assigned to:", user.email);
@@ -48,15 +47,15 @@ function Signup() {
         <form onSubmit={(e) => { e.preventDefault(); handleSignup(); }}>
             <div className='parent-box'>
                 <label htmlFor="fullName">Enter Full Name:</label>
-                <input type="text" id='fullName' className='input-box' value={fullName} onChange={e => setFullName(e.target.value)} placeholder='John Doe' />
+                <input type="text" id='fullName' className='input-box' value={fullName} onChange={e => setFullName(e.target.value)} placeholder='John Doe' required />
             </div>
             <div className='parent-box'>
                 <label htmlFor="emailAddress">Email Address:</label>
-                <input type="email" id='emailAddress' className='input-box' value={emailAddress} onChange={e => setEmailAddress(e.target.value)} placeholder='johndoe@gmail.com' />
+                <input type="email" id='emailAddress' className='input-box' value={emailAddress} onChange={e => setEmailAddress(e.target.value)} placeholder='johndoe@gmail.com' required />
             </div>
             <div className='parent-box'>
                 <label htmlFor="password">Password:</label>
-                <input type="password" id='password' className='input-box' value={password} onChange={e => setPassword(e.target.value)} placeholder='Password' />
+                <input type="password" id='password' className='input-box' value={password} onChange={e => setPassword(e.target.value)} placeholder='Password' required />
             </div>
             <div className='goToSignup'>
                 <p>Already have an account? <Link to="/login" className='link'>Login</Link></p>

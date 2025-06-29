@@ -49,11 +49,11 @@ function Login() {
        <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
          <div className='parent-box'>
           <label htmlFor="emailAddress">Email Address:</label>
-          <input type="email" id='emailAddress' className='input-box' value={emailAddress} onChange={e => setEmailAddress(e.target.value)} placeholder='johndoe@gmail.com' />
+          <input type="email" id='emailAddress' className='input-box' value={emailAddress} onChange={e => setEmailAddress(e.target.value)} placeholder='johndoe@gmail.com' required />
         </div>
         <div className='parent-box'>
           <label htmlFor="password">Password:</label>
-          <input type="password" id='password' className='input-box' value={password} onChange={e => setPassword(e.target.value)} placeholder='Password' />
+          <input type="password" id='password' className='input-box' value={password} onChange={e => setPassword(e.target.value)} placeholder='Password' required />
         </div>
         <div className='goToSignup'>
           <p>Don't have an account? <Link to="/signup" className='link'>Signup</Link></p>

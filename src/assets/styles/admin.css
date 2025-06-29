@@ -141,6 +141,214 @@
   transition: all 0.3s ease-in-out;
 }
 
-.text {
-    color: white;
+.user-grid-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 40px;
+}
+
+.add-users-nav {
+  flex: 1;
+  color: white;
+  font-weight: 200;
+}
+
+.add-users-nav h2.active-nav {
+  background-color: rgba(255, 255, 255, 0.1); 
+  padding: 12px;
+  border-radius: 5px;
+}
+
+.add-users-form {
+  flex: 2;
+  color: white;
+}
+
+.vertical-divider {
+  width: 1px;
+  background-color: white;
+  min-height: 450px; 
+}
+
+#personalInformation {
+    cursor: pointer;
+}
+
+#team {
+    cursor: pointer;
+}
+
+.name-grid {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 40px;
+}
+
+.description-box {
+  background-color: #ffffff;  
+  color: #000000;              
+  border: none;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-top: 5px;
+  width: 96%;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  outline: none;
+  transition: border 0.3s ease;
+}
+
+.description-box::placeholder {
+    font-family: "Poppins", sans-serif;
+}
+
+.description-box-two {
+  background-color: #ffffff;  
+  color: #000000;              
+  border: none;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-top: 5px;
+  width: 92%;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  outline: none;
+  transition: border 0.3s ease;
+}
+
+.description-box-two::placeholder {
+    font-family: "Poppins", sans-serif;
+}
+
+.personal-info-button {
+    margin-top: 10px;
+    display: flex;
+    align-items: end;
+    justify-content: end;
+    margin-left: 600px;
+}
+
+/* Team */
+
+.team-info-button {
+    margin-top: 20px;
+    display: flex;
+    align-items: end;
+    justify-content: end;
+    margin-left: 500px;
+}
+
+.team-info-button-two {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: auto auto;
+}
+
+.team-limit-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.radio-box {
+  background-color: #f2f4f7;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  padding: 12px 20px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: black;
+}
+
+.radio-input {
+  display: none;
+}
+
+.radio-box input[type="radio"]:checked + span {
+  font-weight: 600;
+}
+
+.radio-box input[type="radio"]:checked ~ label {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.radio-box.selected {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.team-details-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.team-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  max-width: 350px;
+  text-align: left;
+}
+
+.team-button {
+  all: unset;
+  display: inline-block;
+  border-radius: 10px;
+  background-color: #007BFF;
+  color: white;
+  font-size: 18px;
+  font-weight: 500;
+  padding: 10px 30px;
+  margin-bottom: 20px;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  cursor: pointer;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 140px;
+  transition: all 0.3s ease-in-out;
+}
+
+.team-details-section {
+  padding: 20px;
+  color: white;
+}
+
+.info-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 20px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
+  margin-bottom: 10px;
+}
+
+.info-card h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
 }
