@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import AdminHeader from "../../components/admin/AdminHeader";
 import AdminProfile from './AdminProfile';
-import Members from './Members';
+import Users from './Users';
 import Team from './Team';
 import Analytics from './Analytics';
 import Calendar from './Calendar';
@@ -21,8 +21,8 @@ function AdminHome({ fullName, onLogout }) {
     switch (activeSection) {
       case 'profile':
         return <AdminProfile/>;
-      case 'members':
-        return <Members/>;
+      case 'users':
+        return <Users/>;
       case 'team':
         return <Team/>;
       case 'analytics':

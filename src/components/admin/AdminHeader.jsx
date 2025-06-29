@@ -9,7 +9,7 @@ const AdminHeader = ({ onSelectSection }) => {
       <nav className="nav-links">
         <button onClick={() => onSelectSection('dashboard')}>Dashboard</button>
         <button onClick={() => onSelectSection('profile')}>Profile</button>
-        <button onClick={() => onSelectSection('members')}>Members</button>
+        <button onClick={() => onSelectSection('users')}>Users</button>
         <button onClick={() => onSelectSection('team')}>Team</button>
         <button onClick={() => onSelectSection('analytics')}>Analytics</button>
         <button onClick={() => onSelectSection('calendar')}>Calendar</button>
