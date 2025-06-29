@@ -39,7 +39,7 @@ function Signup() {
         }
         console.log('Error:', error.message);
     }
- };
+  };
 
   return (
     <section className='container'>

@@ -11,39 +11,36 @@ function Login() {
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-  if (!emailAddress || !password) {
-    toast.error('Please enter email and password');
-    return;
-  }
-
-  try {
-    const { user } = await signInWithEmailAndPassword(auth, emailAddress, password);
-    console.log("User logged in:", user.email);
-
-    // 🔧 Use UID instead of email to get user doc
-    const userDoc = await getDoc(doc(db, 'users', user.uid));
-
-    if (!userDoc.exists()) {
-      toast.error('User profile not found.');
-      return;
+    if (!emailAddress || !password) {
+        toast.error('Please enter email and password');
+        return;
     }
 
-    const userData = userDoc.data();
-    const fullName = userData.fullName;
-    const role = userData.role;
+    try {
+        const { user } = await signInWithEmailAndPassword(auth, emailAddress, password);
+        console.log("User logged in:", user.email);
 
-    // Save to local storage (optional)
-    localStorage.setItem('userFullName', fullName);
-    localStorage.setItem('userRole', role);
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
 
-    console.log(`User: ${fullName}, Role: ${role}`);
-    navigate('/dashboard');
-  } catch (error) {
-    toast.error('Login failed: ' + error.message);
-    console.log("Login failed: " + error.message);
-  }
-};
+        if (!userDoc.exists()) {
+        toast.error('User profile not found.');
+        return;
+        }
 
+        const userData = userDoc.data();
+        const fullName = userData.fullName;
+        const role = userData.role;
+
+        localStorage.setItem('userFullName', fullName);
+        localStorage.setItem('userRole', role);
+
+        console.log(`User: ${fullName}, Role: ${role}`);
+        navigate('/dashboard');
+    } catch (error) {
+        toast.error('Login failed: ' + error.message);
+        console.log("Login failed: " + error.message);
+    }
+  };
 
   return (
     <section className='container'>
