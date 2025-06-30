@@ -111,23 +111,25 @@ function Team() {
             {teamList.length === 0 ? (
               <p>No teams created yet.</p>
             ) : (
-              <div className="team-details-list">
-                {teamList.map((team) => (
-                  <div key={team.id} className="team-card">
-                    <h3>{team.teamName}</h3>
-                    <p>{team.teamDescription}</p>
-                    <button
-                      className='team-button'
-                      onClick={() => {
-                        setSelectedTeam(team);        
-                        setIsTeamInformation(true);  
-                      }}
-                    >
-                      More Info
-                    </button>
-                  </div>
-                ))}
-              </div>
+               <>
+                <div className='team'>
+                  {teamList.map((team) => (
+                    <div key={team.id} className='tech-card'>
+                      <h3 style={{marginBottom: '0px'}} className='tech-title'>{team.teamName}</h3>
+                      <p style={{marginTop: '0px'}} className='tech-description'>{team.teamDescription}</p>
+                      <button
+                        className='tech-button'
+                        onClick={() => {
+                          setSelectedTeam(team);        
+                          setIsTeamInformation(true);  
+                        }}
+                      >
+                        More Info
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </>

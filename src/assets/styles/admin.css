@@ -285,13 +285,17 @@
   border-color: #007bff;
 }
 
-.team-details-list {
+/*  */
+
+.team {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 20px; 
+  justify-items: center; 
 }
 
-.team-card {
+.tech-card {
+  width: 360px;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border-radius: 20px;
@@ -302,11 +306,18 @@
   color: white;
   cursor: pointer;
   transition: all 0.3s ease;
-  max-width: 350px;
-  text-align: left;
+  text-align: left;
 }
 
-.team-button {
+.tech-title {
+  color: white;
+}
+
+.tech-description {
+  color: whitesmoke;
+}
+
+.tech-button {
   all: unset;
   display: inline-block;
   border-radius: 10px;
@@ -328,6 +339,16 @@
   width: 100%;
   max-width: 140px;
   transition: all 0.3s ease-in-out;
+}
+
+.tech-button:hover {
+  background-color: #1e40af;
+}
+
+.arrow-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  margin-left: 0.5rem;
 }
 
 .team-details-section {
