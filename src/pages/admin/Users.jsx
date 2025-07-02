@@ -1,29 +1,40 @@
 import React, { useEffect, useState } from 'react';
 import '../../assets/styles/admin.css';
-import { collection, getDocs } from 'firebase/firestore';
+import { addDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
+import { v4 as uuidv4 } from 'uuid';
 
 function Users() {
-
   const [isAddingUser, setIsAddingUser] = useState(false);
   const [activeSection, setActiveSection] = useState('personalInformation');
   const [teams, setTeams] = useState([]);
+  const [selected, setSelected] = useState('');
   const [selectedTeam, setSelectedTeam] = useState('');
+  const [invitationLink, setInvitationLink] = useState('');
   const [userFormData, setUserFormData] = useState({
     firstName: '',
     lastName: '',
     emailAddress: '',
     phoneNumber: '',
     shortDescription: '',
-    selectedTeamName: ''
+    memberRole: ''
   });
 
-  const handleAddUserClick = () => {
-    setIsAddingUser(true);
-  };
+  const handleAddUserClick = () => setIsAddingUser(true);
+
+  const memberRoles = [
+    { label: "Manager", value: "manager" },
+    { label: "Team Lead", value: "teamLead" },
+    { label: "Intern", value: "intern" },
+    { label: "Viewer", value: "viewer" }
+  ];
 
   const handleUserInputChange = (e) => {
-    setUserFormData({ ...userFormData, [e.target.id]: e.target.value })
+    const { id, value } = e.target;
+    setUserFormData((prevData) => ({
+      ...prevData,
+      [id]: value,
+    }));
   };
 
   const fetchTeams = async () => {
@@ -32,7 +43,7 @@ function Users() {
       const teamData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setTeams(teamData);
     } catch (error) {
-      console.error("Error fetching teams:", error)
+      console.error("Error fetching teams:", error);
     }
   };
 
@@ -42,148 +53,238 @@ function Users() {
     }
   }, [isAddingUser]);
 
+  // GO TO NEXT SCREEN
+  const handleNextFromPersonalInfo = (e) => {
+    e.preventDefault();
+    setActiveSection('team');
+  };
+
+  const handleNextFromTeam = (e) => {
+    e.preventDefault();
+    if (!selectedTeam) {
+      alert("Please select a team before proceeding.");
+      return;
+    }
+    setActiveSection('invitation');
+  };
+
+  // SUBMIT INVITATION
+  const handleSubmitInvitation = async (e) => {
+    e.preventDefault();
+    try {
+      const id = uuidv4();
+      const inviteData = {
+        ...userFormData,
+        teamName: selectedTeam,
+        createdAt: new Date()
+      };
+
+      await addDoc(collection(db, 'pendingInvitations'), {
+        invitationId: id,
+        ...inviteData
+      });
+
+      const link = `http://localhost:5173/invite/${id}`; // Replace with deployed domain later
+      setInvitationLink(link);
+      alert("Invitation link generated!");
+    } catch (error) {
+      console.error("Error creating invitation:", error);
+    }
+  };
+
   return (
     <>
       {!isAddingUser ? (
         <div className='users-container'>
           <h1 className='welcome-title'>Users</h1>
           <div className='button-container'>
-            <button id="addUsers" className='admin-button' onClick={handleAddUserClick}>Add Users</button>
+            <button className='admin-button' onClick={handleAddUserClick}>Add Users</button>
           </div>
         </div>
       ) : (
         <div className='add-users-container'>
           <h1 className='welcome-title'>Add Users</h1>
-           <div className='user-grid-container'>
+          <div className='user-grid-container'>
+            {/* Left nav */}
             <div className='add-users-nav'>
-              <h2
-                id='personalInformation'
-                className={activeSection === 'personalInformation' ? 'active-nav' : ''}
-                onClick={() => setActiveSection('personalInformation')}
-              >
-                Personal Information
-              </h2>
-
-              <h2
-                id='team'
-                className={activeSection === 'team' ? 'active-nav' : ''}
-                onClick={() => setActiveSection('team')}
-              >
-                Team
-              </h2>
-
-              <h2
-                id='invitation'
-                className={activeSection === 'invitation' ? 'active-nav' : ''}
-                onClick={() => setActiveSection('invitation')}
-              >
-                Invitation
-              </h2>
+              <h2 className={activeSection === 'personalInformation' ? 'active-nav' : ''} onClick={() => setActiveSection('personalInformation')}>Personal Information</h2>
+              <h2 className={activeSection === 'team' ? 'active-nav' : ''} onClick={() => setActiveSection('team')}>Team & Role</h2>
+              <h2 className={activeSection === 'invitation' ? 'active-nav' : ''} onClick={() => setActiveSection('invitation')}>Invitation</h2>
             </div>
 
-            <div className="vertical-divider"></div> 
+            <div className="vertical-divider"></div>
 
+            {/* Right form content */}
             <div className='add-users-form'>
               {/* PERSONAL INFORMATION */}
-                {activeSection === 'personalInformation' && (
-                  <div>
-                    <h2 style={{ marginBottom: '0px' }}>Personal Information</h2>
-                    <p style={{ marginTop: '0px' }}>Enter the user's personal information.</p>
-                    <form>
-                    <div className='name-grid'>
-                      <div>
-                        <label htmlFor='fullName'>First Name:</label>
-                        <input type="text" id="firstName" value={userFormData.firstName} onChange={handleUserInputChange} className='input-box' placeholder='John' required/>
-                      </div>
-                      <div>
-                        <label htmlFor='lastName'>Last Name:</label>
-                        <input type="text" id="lastName" value={userFormData.lastName} onChange={handleUserInputChange} className='input-box' placeholder='Doe' required/>
-                      </div>
+              {activeSection === 'personalInformation' && (
+                <form onSubmit={handleNextFromPersonalInfo}>
+                  <h2 style={{ marginBottom: '0px' }}>Personal Information</h2>
+                  <p style={{ marginTop: '0px' }}>Enter the user's personal information.</p>
+
+                  <div className='name-grid'>
+                    <div>
+                      <label htmlFor='firstName'>First Name:</label>
+                      <input type="text" id="firstName" value={userFormData.firstName} onChange={handleUserInputChange} className='input-box' placeholder='John' required />
+                    </div>
+                    <div>
+                      <label htmlFor='lastName'>Last Name:</label>
+                      <input type="text" id="lastName" value={userFormData.lastName} onChange={handleUserInputChange} className='input-box' placeholder='Doe' required />
+                    </div>
+                  </div>
+
+                  <br />
+
+                  <div className='name-grid'>
+                    <div>
+                      <label htmlFor='emailAddress'>Email Address:</label>
+                      <input type="email" id="emailAddress" value={userFormData.emailAddress} onChange={handleUserInputChange} className='input-box' placeholder='john.doe@gmail.com' required />
+                    </div>
+                    <div>
+                      <label htmlFor='phoneNumber'>Phone Number:</label>
+                      <input type="text" id="phoneNumber" value={userFormData.phoneNumber} onChange={handleUserInputChange} className='input-box' placeholder='+91-1234567890' required />
+                    </div>
+                  </div>
+
+                  <div className='parent-box'>
+                    <label htmlFor='shortDescription'>Short Description:</label>
+                    <textarea id="shortDescription" value={userFormData.shortDescription} onChange={handleUserInputChange} className='description-box' placeholder='Type a description about the user...' />
+                  </div>
+
+                  <div className='personal-info-button'>
+                    <button type='submit' className='admin-button'>Next</button>
+                  </div>
+                </form>
+              )}
+
+              {/* TEAM */}
+              {activeSection === 'team' && (
+                <form onSubmit={handleNextFromTeam}>
+                  <h2 style={{ marginBottom: '0px' }}>Team & Role</h2>
+                  <p style={{ marginTop: '0px' }}>Assign the user to a role and team.</p>
+
+                  <label htmlFor='memberRole'>Select the role:</label>
+                    <div className="team-limit-radio-group">
+                      {memberRoles.map((option, index) => (
+                        <label
+                          key={index}
+                          className={`radio-box ${selected === option.value ? 'selected' : ''}`}
+                        >
+                          <input
+                            type="radio"
+                            name="memberRole"
+                            value={option.value}
+                            className="radio-input"
+                            onChange={() => {
+                              setSelected(option.value);
+                              setUserFormData((prev) => ({ ...prev, memberRole: option.value }));
+                            }}
+                            checked={selected === option.value}
+                          />
+                          {option.label}
+                        </label>
+                      ))}
                     </div>
 
                     <br/>
 
-                      <div className='name-grid'>
-                      <div>
-                        <label htmlFor='userEmailAddress'>Email Address:</label>
-                        <input type="email" id="userEmailAddress" value={userFormData} onChange={handleUserInputChange} className='input-box' placeholder='johndoe@gmail.com' required/>
+                  {teams.length === 0 ? (
+                    <p className='not-available'>No teams available</p>
+                  ) : (
+                    <>
+                    <label htmlFor='userTeam'>Select a team:</label>
+                      <div className='team-limit-radio-group'>
+                        {teams.map((team) => (
+                          <label key={team.id} className={`radio-box ${selectedTeam === team.teamName ? 'selected' : ''}`}>
+                            <input
+                              type="radio"
+                              name="userTeam"
+                              value={team.teamName}
+                              className="radio-input"
+                              onChange={() => setSelectedTeam(team.teamName)}
+                              checked={selectedTeam === team.teamName}
+                            />
+                            {team.teamName}
+                          </label>
+                        ))}
                       </div>
-                      <div>
-                        <label htmlFor='userPassword'>Password:</label>
-                        <input type="password" id="userPassword" value={userFormData} onChange={handleUserInputChange} className='input-box' placeholder='Password' required/>
-                      </div>
-                    </div>
+                    </>
+                  )}
 
-                    <div className='parent-box'>
-                      <label htmlFor='userDescription'>Short Description:</label>
-                      <br/>
-                      <textarea id="userDescription" value={userFormData} onChange={handleUserInputChange} className='description-box' placeholder='Type a description about the user...'/>
-                    </div>
-
-                    <div className='personal-info-button'>
-                      <button type='submit' className='admin-button'>Next</button>
-                    </div>
-                    </form>
+                  <div className='team-info-button-two'>
+                    <button type='button' className='admin-button' onClick={() => setActiveSection('personalInformation')}>Back</button>
+                    <button type='submit' className='admin-button'>Next</button>
                   </div>
-                )}
+                </form>
+              )}
 
-              {/* TEAM */}
-                {activeSection === 'team' && (
-                  <div>
-                    <h2 style={{ marginBottom: '0px' }}>Team</h2>
-                    <p style={{ marginTop: '0px' }}>Assign the user to a team.</p>
-                    <div className='team-list'>
-                      {teams.length === 0 ? (
-                        <p>No teams available</p>
-                      ) : (
-                          <div className='team-limit-radio-group'>
-                            {teams.map((team) => (
-                              <label
-                                key={team.id}
-                                className={`radio-box ${selectedTeam === team.teamName ? 'selected' : ''}`}
-                              >
-                                <input
-                                  type="radio"
-                                  name="userTeam"
-                                  value={team.teamName}
-                                  className="radio-input"
-                                  onChange={() => setSelectedTeam(team.teamName)}
-                                  checked={selectedTeam === team.teamName}
-                                />
-                                {team.teamName}
-                              </label>
-                            ))}
-                          </div>
-                        )}
-                    </div>
-                    <div className='team-info-button-two'>
-                      <button type='button' className='admin-button' onClick={() => setActiveSection('personalInformation')}>Back</button>
-                      <button type='submit' className='admin-button'>Next</button>
-                    </div>
-                  </div>
-                )}
-              
               {/* INVITATION */}
-                {activeSection === 'invitation' && (
-                  <form>
-                    <div>
-                      <h2 style={{ marginBottom: '0px' }}>Invitation</h2>
-                      <p style={{ marginTop: '0px' }}>Send an invitation to the user to join the team.</p>
-                      <input type="text" id="invitationLink" className='input-box' placeholder='Invitation'/>
+              {activeSection === 'invitation' && (
+                <form onSubmit={handleSubmitInvitation}>
+                  <h2 style={{ marginBottom: '0px' }}>Invitation</h2>
+                  <p style={{ marginTop: '0px' }}>Send an invitation to the user to join the team.</p>
 
-                      <div className='team-info-button-two'>
-                        <button type='button' className='admin-button' onClick={() => setActiveSection('categorization')}>Back</button>
-                        <button type='submit' className='admin-button'>Submit</button>
-                      </div>
-                    </div>
-                  </form>
-                )}
+                  <div>
+                    <label htmlFor="invitationLink">Invitation Link:</label>
+                    <input type="text" id="invitationLink" value={invitationLink} className='input-box' placeholder='Generated link will appear here...' readOnly />
+                    
+                    <button
+                      type="button"
+                      className="admin-button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(invitationLink);
+                        alert("Invitation link copied to clipboard!");
+                      }}
+                      disabled={!invitationLink}
+                    >
+                      Copy
+                    </button>
+                  </div>
+
+                  <div className='team-info-button-two'>
+                    <button type='button' className='admin-button' onClick={() => setActiveSection('team')}>Back</button>
+                    <button type='submit' className='admin-button'>Generate Invitation</button>
+                    <button
+                      type='button'
+                      className='admin-button'
+                      onClick={async () => {
+                        try {
+                          const userData = {
+                            ...userFormData,
+                            teamName: selectedTeam,
+                            createdAt: new Date()
+                          };
+                          await addDoc(collection(db, 'teamMembers'), userData);
+                          alert("User successfully added to database!");
+                          setIsAddingUser(false);
+                          setUserFormData({
+                            firstName: '',
+                            lastName: '',
+                            emailAddress: '',
+                            phoneNumber: '',
+                            shortDescription: '',
+                            memberRole: '',
+                          });
+                          setSelectedTeam('');
+                          setInvitationLink('');
+                          setActiveSection('personalInformation');
+                        } catch (error) {
+                          console.error("Error saving user to users collection:", error);
+                          alert("Failed to add user.");
+                        }
+                      }}
+                    >
+                      Submit & Finish
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
         </div>
       )}
     </>
-  )
+  );
 }
 
-export default Users
+export default Users;
