@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import Lottie from 'lottie-react';
 import '../../assets/styles/admin.css';
-import { addDoc, collection, getDocs } from 'firebase/firestore';
+import { addDoc, collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { v4 as uuidv4 } from 'uuid';
+import successAnimation from '../../assets/animations/success.json'; 
+import { FaRegCopy } from 'react-icons/fa';
 
 function Users() {
   const [isAddingUser, setIsAddingUser] = useState(false);
@@ -11,6 +14,9 @@ function Users() {
   const [selected, setSelected] = useState('');
   const [selectedTeam, setSelectedTeam] = useState('');
   const [invitationLink, setInvitationLink] = useState('');
+  const [showUserAddedModal, setShowUserAddedModal] = useState(false);
+  const [members, setMembers] = useState([]);
+  const [pendingInvites, setPendingInvites] = useState([]);
   const [userFormData, setUserFormData] = useState({
     firstName: '',
     lastName: '',
@@ -47,11 +53,39 @@ function Users() {
     }
   };
 
+  const fetchMembers = () => {
+    const unsubscribe = onSnapshot(collection(db, 'teamMembers'), (snapshot) => {
+      const userData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setMembers(userData);
+    });
+
+    return () => unsubscribe();
+  };
+
+  const fetchPendingInvites = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, 'pendingInvitations'));
+      const inviteData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setPendingInvites(inviteData);
+    } catch (error) {
+      console.error("Error fetching pending invites: ", error);
+    }
+  }
+
   useEffect(() => {
     if (isAddingUser) {
       fetchTeams();
+      fetchMembers();
     }
   }, [isAddingUser]);
+
+  useEffect(() => {
+    fetchMembers();
+    fetchPendingInvites();
+  }, []);
 
   // GO TO NEXT SCREEN
   const handleNextFromPersonalInfo = (e) => {
@@ -76,7 +110,8 @@ function Users() {
       const inviteData = {
         ...userFormData,
         teamName: selectedTeam,
-        createdAt: new Date()
+        createdAt: new Date(),
+        invitationAccepted: false
       };
 
       await addDoc(collection(db, 'pendingInvitations'), {
@@ -95,12 +130,69 @@ function Users() {
   return (
     <>
       {!isAddingUser ? (
-        <div className='users-container'>
-          <h1 className='welcome-title'>Users</h1>
-          <div className='button-container'>
-            <button className='admin-button' onClick={handleAddUserClick}>Add Users</button>
+        <>
+          <div className='users-container'>
+            <h1 className='welcome-title'>Users</h1>
+            <div className='button-container'>
+              <button className='admin-button' onClick={handleAddUserClick}>Add Users</button>
+            </div>
           </div>
-        </div>
+
+          <div className='user-list'>
+            {members.length === 0 ? (
+              <p>No users added yet.</p>
+            ) : (
+              <table className='user-table'>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email Address</th>
+                    <th>Phone Number</th>
+                    <th>Role</th>
+                    <th>Team</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {members.map((user) => (
+                    <tr key={user.id}>
+                      <td>{user.firstName} {user.lastName}</td>
+                      <td>{user.emailAddress}</td>
+                      <td>{user.phoneNumber}</td>
+                      <td>{user.memberRole}</td>
+                      <td>{user.teamName}</td>
+                      <td>{user.shortDescription}</td>
+                      <td>
+                        {user.invitationAccepted ? (
+                          <span style={{ 'color': 'green' }}>Accepted</span>
+                        ) : (
+                          <>
+                          <span style={{ 'color': 'red' }}>Pending</span>
+                          <FaRegCopy
+                            style={{ cursor: 'pointer' }}
+                            title='Copy Invitation Link'
+                            onClick={() => {
+                              const invite = pendingInvites.find(inv => inv.emailAddress === user.emailAddress);
+                              if (invite) {
+                                const link = `http://localhost:5173/invite/${invite.invitationId}`; // Replace with your domain
+                                navigator.clipboard.writeText(link);
+                                alert("Invitation link copied!");
+                              } else {
+                                alert("Invitation link not found.");
+                              }
+                            }}
+                          />
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </>
       ) : (
         <div className='add-users-container'>
           <h1 className='welcome-title'>Add Users</h1>
@@ -226,24 +318,38 @@ function Users() {
 
                   <div>
                     <label htmlFor="invitationLink">Invitation Link:</label>
-                    <input type="text" id="invitationLink" value={invitationLink} className='input-box' placeholder='Generated link will appear here...' readOnly />
-                    
-                    <button
-                      type="button"
-                      className="admin-button"
-                      onClick={() => {
-                        navigator.clipboard.writeText(invitationLink);
-                        alert("Invitation link copied to clipboard!");
-                      }}
-                      disabled={!invitationLink}
-                    >
-                      Copy
-                    </button>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <input
+                        type="text"
+                        id="invitationLink"
+                        value={invitationLink}
+                        className="input-box"
+                        placeholder="Generated link will appear here..."
+                        readOnly
+                        style={{ flex: 1 }}
+                      />
+
+                      {!invitationLink && (
+                        <button type="submit" className="generate-button">Generate</button>
+                      )}
+
+                      {invitationLink && (
+                        <button
+                          type="button"
+                          className="generate-button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(invitationLink);
+                            alert("Invitation link copied to clipboard!");
+                          }}
+                        >
+                          Copy
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   <div className='team-info-button-two'>
                     <button type='button' className='admin-button' onClick={() => setActiveSection('team')}>Back</button>
-                    <button type='submit' className='admin-button'>Generate Invitation</button>
                     <button
                       type='button'
                       className='admin-button'
@@ -255,7 +361,9 @@ function Users() {
                             createdAt: new Date()
                           };
                           await addDoc(collection(db, 'teamMembers'), userData);
-                          alert("User successfully added to database!");
+                          //alert("User successfully added to database!");
+                          fetchMembers();
+                          setShowUserAddedModal(true);
                           setIsAddingUser(false);
                           setUserFormData({
                             firstName: '',
@@ -274,7 +382,7 @@ function Users() {
                         }
                       }}
                     >
-                      Submit & Finish
+                      Submit
                     </button>
                   </div>
                 </form>
@@ -283,6 +391,47 @@ function Users() {
           </div>
         </div>
       )}
+
+      {/* USER ADDED MODAL */}
+      {showUserAddedModal && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <Lottie 
+              animationData={successAnimation} 
+              loop={false} 
+              autoplay 
+              style={{ height: 150, width: 150, margin: '0 auto' }}
+            />
+            <h2 style={{ marginBottom: '0px' }}>Success!</h2>
+            <p style={{ marginTop: '0px' }}>
+              The user has been successfully added to the database.
+            </p>
+            <button
+              className='admin-button'
+              onClick={() => {
+                setShowUserAddedModal(false);
+                setIsAddingUser(false);
+                setUserFormData({
+                  firstName: '',
+                  lastName: '',
+                  emailAddress: '',
+                  phoneNumber: '',
+                  shortDescription: '',
+                  memberRole: '',
+                });
+                setSelectedTeam('');
+                setInvitationLink('');
+                setSelected('');
+                setActiveSection('personalInformation');
+                fetchMembers();
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
     </>
   );
 }

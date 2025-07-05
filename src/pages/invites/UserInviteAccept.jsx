@@ -1,12 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, where, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc,
+  Timestamp
+} from 'firebase/firestore';
 import { useParams } from 'react-router-dom';
 import { db } from '../../firebase';
+import InviteHeader from './InviteHeader';
 
 function UserInviteAccept() {
   const { invitationId } = useParams();
   const [userData, setUserData] = useState(null);
-  const [teamData, setTeamData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchInvitation = async () => {
@@ -15,12 +24,7 @@ function UserInviteAccept() {
       const snapshot = await getDocs(q);
       if (!snapshot.empty) {
         const data = snapshot.docs[0].data();
-        setUserData({ ...data });
-        const teamQ = query(collection(db, 'teams'), where('teamName', '==', data.teamName));
-        const teamSnap = await getDocs(teamQ);
-        if (!teamSnap.empty) {
-          setTeamData(teamSnap.docs[0].data());
-        }
+        setUserData({ ...data, docId: snapshot.docs[0].id });
       } else {
         alert('Invalid or expired invitation.');
       }
@@ -33,15 +37,24 @@ function UserInviteAccept() {
 
   const handleAcceptInvite = async () => {
     try {
-      await addDoc(collection(db, 'teamMembers'), userData);
-      const q = query(collection(db, 'pendingInvitations'), where('invitationId', '==', invitationId));
-      const snapshot = await getDocs(q);
-      if (!snapshot.empty) {
-        await deleteDoc(doc(db, 'pendingInvitations', snapshot.docs[0].id));
+      const newUser = {
+        ...userData,
+        invitationAccepted: true,
+        createdAt: Timestamp.now()
+      };
+      delete newUser.docId; // Remove Firestore docId before storing
+
+      await addDoc(collection(db, 'teamMembers'), newUser);
+
+      if (userData?.docId) {
+        await deleteDoc(doc(db, 'pendingInvitations', userData.docId));
       }
-      alert('Invitation accepted. User added successfully!');
+
+      alert('Invitation accepted! You have been successfully added to the team.');
+      window.location.href = '/'; // Optional: redirect to home or dashboard
     } catch (error) {
       console.error('Error accepting invitation:', error);
+      alert('Failed to accept the invitation. Please try again.');
     }
   };
 
@@ -52,14 +65,23 @@ function UserInviteAccept() {
   if (loading) return <p>Loading...</p>;
 
   return userData ? (
-    <div className="invite-page">
-      <h1>You're invited, {userData.firstName}!</h1>
-      <p><strong>Email:</strong> {userData.emailAddress}</p>
-      <p><strong>Description:</strong> {userData.shortDescription}</p>
-      <h2>Team: {teamData?.teamName}</h2>
-      <p><strong>Team Description:</strong> {teamData?.teamDescription}</p>
-      <button className='admin-button' onClick={handleAcceptInvite}>Accept Invite</button>
-    </div>
+    <>
+      <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '60px', fontWeight: 600, color: 'white' }}>TeamSync</div>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
+        <section className='container'>
+          <div className='box'>
+            <h1 style={{ textAlign: 'center' }}>Hey, {userData.firstName}! 👋</h1>
+            <p style={{ textAlign: 'center' }}>
+              You're invited to TeamSync as a <strong>{userData.memberRole}</strong>.
+              Kindly click the below button to accept the invite.
+            </p>
+            <div className='parent-box-two'>
+              <button className="login-button" onClick={handleAcceptInvite}>Accept Invite</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </>
   ) : (
     <p>Invitation not found.</p>
   );

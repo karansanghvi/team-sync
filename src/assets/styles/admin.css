@@ -141,6 +141,31 @@
   transition: all 0.3s ease-in-out;
 }
 
+.generate-button {
+  all: unset;
+  display: inline-block;
+  border-radius: 10px;
+  background-color: #007BFF;
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+  padding: 7px 50px;
+  margin-bottom: 5px;
+  margin-top: 4px;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  cursor: pointer;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 140px;
+  transition: all 0.3s ease-in-out;
+}
+
 .user-grid-container {
   display: flex;
   align-items: flex-start;
@@ -179,9 +204,9 @@
 }
 
 .name-grid {
-    display: grid;
-    grid-template-columns: auto auto;
-    gap: 40px;
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 40px;
 }
 
 .description-box {
@@ -375,4 +400,18 @@
 .not-available {
   color: white;
   font-size: 15px;
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+.user-table th, .user-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+.user-table th {
+  background-color: #f4f4f4;
+  text-align: left;
 }

@@ -321,7 +321,7 @@ function Team() {
           </button>
         </div>
       </div>
-    )}
+      )}
 
       {/* MODAL ON DELETE TEAM */}
       {showDeleteModal && (
