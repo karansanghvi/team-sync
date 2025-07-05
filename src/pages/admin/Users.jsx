@@ -53,7 +53,6 @@ function Users() {
     }
   };
 
-  // Updated to use real-time listener for pending invites instead of members
   const fetchPendingInvites = () => {
     const unsubscribe = onSnapshot(collection(db, 'pendingInvitations'), (snapshot) => {
       const inviteData = snapshot.docs.map(doc => ({
@@ -76,7 +75,6 @@ function Users() {
     fetchPendingInvites();
   }, []);
 
-  // GO TO NEXT SCREEN
   const handleNextFromPersonalInfo = (e) => {
     e.preventDefault();
     setActiveSection('team');
@@ -91,7 +89,6 @@ function Users() {
     setActiveSection('invitation');
   };
 
-  // SUBMIT INVITATION
   const handleSubmitInvitation = async (e) => {
     e.preventDefault();
     try {

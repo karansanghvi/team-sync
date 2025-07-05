@@ -42,7 +42,6 @@ function UserInviteAccept() {
 
     setAccepting(true);
     try {
-      // Use the Firestore document ID, not the custom invitationId
       const inviteRef = doc(db, 'pendingInvitations', userData.docId);
       await updateDoc(inviteRef, {
         invitationAccepted: true,
@@ -51,7 +50,6 @@ function UserInviteAccept() {
       console.log("Invitation accepted successfully!");
       toast.success("Invitation accepted successfully! Welcome to the team!");
       
-      // Update local state to reflect the change
       setUserData(prev => ({ ...prev, invitationAccepted: true }));
     } catch (error) {
       console.error("Error accepting invitation:", error);
