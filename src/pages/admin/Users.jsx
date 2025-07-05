@@ -151,19 +151,19 @@ function Users() {
                       <td>{user.shortDescription}</td>
                       <td>
                         {user.invitationAccepted ? (
-                          <span style={{ 'color': 'green' }}>Accepted</span>
+                          <span>Accepted</span>
                         ) : (
                           <>
-                          <span style={{ 'color': 'red' }}>Pending</span>
-                          <FaRegCopy
-                            style={{ cursor: 'pointer', marginLeft: '8px' }}
-                            title='Copy Invitation Link'
-                            onClick={() => {
-                              const link = `http://localhost:5173/invite/${user.invitationId}`;
-                              navigator.clipboard.writeText(link);
-                              alert("Invitation link copied!");
-                            }}
-                          />
+                            <FaRegCopy
+                              style={{ cursor: 'pointer', marginLeft: '8px' }}
+                              title='Copy Invitation Link'
+                              onClick={() => {
+                                const link = `http://localhost:5173/invite/${user.invitationId}`;
+                                navigator.clipboard.writeText(link);
+                                alert("Invitation link copied!");
+                              }}
+                            />
+                            <span> Pending</span>
                           </>
                         )}
                       </td>
