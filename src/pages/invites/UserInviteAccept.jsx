@@ -4,19 +4,18 @@ import {
   query,
   where,
   getDocs,
-  addDoc,
-  deleteDoc,
   doc,
-  Timestamp
+  updateDoc
 } from 'firebase/firestore';
 import { useParams } from 'react-router-dom';
 import { db } from '../../firebase';
-import InviteHeader from './InviteHeader';
+import { toast } from 'react-toastify';
 
 function UserInviteAccept() {
   const { invitationId } = useParams();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [accepting, setAccepting] = useState(false);
 
   const fetchInvitation = async () => {
     try {
@@ -26,7 +25,7 @@ function UserInviteAccept() {
         const data = snapshot.docs[0].data();
         setUserData({ ...data, docId: snapshot.docs[0].id });
       } else {
-        alert('Invalid or expired invitation.');
+        toast.sucess('Invalid or expired invitation.');
       }
     } catch (error) {
       console.error('Error fetching invitation:', error);
@@ -35,32 +34,36 @@ function UserInviteAccept() {
     }
   };
 
-  const handleAcceptInvite = async () => {
+  const acceptInvitation = async () => {
+    if (!userData || !userData.docId) {
+      toast.error('Invalid invitation data.');
+      return;
+    }
+
+    setAccepting(true);
     try {
-      const newUser = {
-        ...userData,
+      // Use the Firestore document ID, not the custom invitationId
+      const inviteRef = doc(db, 'pendingInvitations', userData.docId);
+      await updateDoc(inviteRef, {
         invitationAccepted: true,
-        createdAt: Timestamp.now()
-      };
-      delete newUser.docId; // Remove Firestore docId before storing
-
-      await addDoc(collection(db, 'teamMembers'), newUser);
-
-      if (userData?.docId) {
-        await deleteDoc(doc(db, 'pendingInvitations', userData.docId));
-      }
-
-      alert('Invitation accepted! You have been successfully added to the team.');
-      window.location.href = '/'; // Optional: redirect to home or dashboard
+        acceptedAt: new Date()
+      });
+      console.log("Invitation accepted successfully!");
+      toast.success("Invitation accepted successfully! Welcome to the team!");
+      
+      // Update local state to reflect the change
+      setUserData(prev => ({ ...prev, invitationAccepted: true }));
     } catch (error) {
-      console.error('Error accepting invitation:', error);
-      alert('Failed to accept the invitation. Please try again.');
+      console.error("Error accepting invitation:", error);
+      toast.error("Failed to accept invitation. Please try again.");
+    } finally {
+      setAccepting(false);
     }
   };
 
   useEffect(() => {
     fetchInvitation();
-  }, []);
+  }, [invitationId]);
 
   if (loading) return <p>Loading...</p>;
 
@@ -70,14 +73,31 @@ function UserInviteAccept() {
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
         <section className='container'>
           <div className='box'>
-            <h1 style={{ textAlign: 'center' }}>Hey, {userData.firstName}! 👋</h1>
-            <p style={{ textAlign: 'center' }}>
-              You're invited to TeamSync as a <strong>{userData.memberRole}</strong>.
-              Kindly click the below button to accept the invite.
-            </p>
-            <div className='parent-box-two'>
-              <button className="login-button" onClick={handleAcceptInvite}>Accept Invite</button>
-            </div>
+            {userData.invitationAccepted ? (
+              <>
+                <h1 style={{ textAlign: 'center' }}>Welcome to the team, {userData.firstName}! 🎉</h1>
+                <p style={{ textAlign: 'center' }}>
+                  Your invitation has been accepted successfully. You're now part of the <strong>{userData.teamName}</strong> team as a <strong>{userData.memberRole}</strong>.
+                </p>
+              </>
+            ) : (
+              <>
+                <h1 style={{ textAlign: 'center' }}>Hey, {userData.firstName}! 👋</h1>
+                <p style={{ textAlign: 'center' }}>
+                  You're invited to TeamSync as a <strong>{userData.memberRole}</strong> in the <strong>{userData.teamName}</strong> team.
+                  Kindly click the below button to accept the invite.
+                </p>
+                <div className='parent-box-two'>
+                  <button 
+                    className="login-button" 
+                    onClick={acceptInvitation}
+                    disabled={accepting}
+                  >
+                    {accepting ? 'Accepting...' : 'Accept Invite'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </section>
       </div>

@@ -6,6 +6,7 @@ import { db } from '../../firebase';
 import { v4 as uuidv4 } from 'uuid';
 import successAnimation from '../../assets/animations/success.json'; 
 import { FaRegCopy } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 function Users() {
   const [isAddingUser, setIsAddingUser] = useState(false);
@@ -15,7 +16,6 @@ function Users() {
   const [selectedTeam, setSelectedTeam] = useState('');
   const [invitationLink, setInvitationLink] = useState('');
   const [showUserAddedModal, setShowUserAddedModal] = useState(false);
-  const [members, setMembers] = useState([]);
   const [pendingInvites, setPendingInvites] = useState([]);
   const [userFormData, setUserFormData] = useState({
     firstName: '',
@@ -53,37 +53,26 @@ function Users() {
     }
   };
 
-  const fetchMembers = () => {
-    const unsubscribe = onSnapshot(collection(db, 'teamMembers'), (snapshot) => {
-      const userData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setMembers(userData);
+  // Updated to use real-time listener for pending invites instead of members
+  const fetchPendingInvites = () => {
+    const unsubscribe = onSnapshot(collection(db, 'pendingInvitations'), (snapshot) => {
+      const inviteData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setPendingInvites(inviteData);
     });
 
     return () => unsubscribe();
   };
 
-  const fetchPendingInvites = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(db, 'pendingInvitations'));
-      const inviteData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setPendingInvites(inviteData);
-    } catch (error) {
-      console.error("Error fetching pending invites: ", error);
-    }
-  }
-
   useEffect(() => {
     if (isAddingUser) {
       fetchTeams();
-      fetchMembers();
     }
   }, [isAddingUser]);
 
   useEffect(() => {
-    fetchMembers();
     fetchPendingInvites();
   }, []);
 
@@ -96,7 +85,7 @@ function Users() {
   const handleNextFromTeam = (e) => {
     e.preventDefault();
     if (!selectedTeam) {
-      alert("Please select a team before proceeding.");
+      toast.succes("Please select a team before proceeding.");
       return;
     }
     setActiveSection('invitation');
@@ -139,7 +128,7 @@ function Users() {
           </div>
 
           <div className='user-list'>
-            {members.length === 0 ? (
+            {pendingInvites.length === 0 ? (
               <p>No users added yet.</p>
             ) : (
               <table className='user-table'>
@@ -155,7 +144,7 @@ function Users() {
                   </tr>
                 </thead>
                 <tbody>
-                  {members.map((user) => (
+                  {pendingInvites.map((user) => (
                     <tr key={user.id}>
                       <td>{user.firstName} {user.lastName}</td>
                       <td>{user.emailAddress}</td>
@@ -170,17 +159,12 @@ function Users() {
                           <>
                           <span style={{ 'color': 'red' }}>Pending</span>
                           <FaRegCopy
-                            style={{ cursor: 'pointer' }}
+                            style={{ cursor: 'pointer', marginLeft: '8px' }}
                             title='Copy Invitation Link'
                             onClick={() => {
-                              const invite = pendingInvites.find(inv => inv.emailAddress === user.emailAddress);
-                              if (invite) {
-                                const link = `http://localhost:5173/invite/${invite.invitationId}`; // Replace with your domain
-                                navigator.clipboard.writeText(link);
-                                alert("Invitation link copied!");
-                              } else {
-                                alert("Invitation link not found.");
-                              }
+                              const link = `http://localhost:5173/invite/${user.invitationId}`;
+                              navigator.clipboard.writeText(link);
+                              alert("Invitation link copied!");
                             }}
                           />
                           </>
@@ -353,33 +337,20 @@ function Users() {
                     <button
                       type='button'
                       className='admin-button'
-                      onClick={async () => {
-                        try {
-                          const userData = {
-                            ...userFormData,
-                            teamName: selectedTeam,
-                            createdAt: new Date()
-                          };
-                          await addDoc(collection(db, 'teamMembers'), userData);
-                          //alert("User successfully added to database!");
-                          fetchMembers();
-                          setShowUserAddedModal(true);
-                          setIsAddingUser(false);
-                          setUserFormData({
-                            firstName: '',
-                            lastName: '',
-                            emailAddress: '',
-                            phoneNumber: '',
-                            shortDescription: '',
-                            memberRole: '',
-                          });
-                          setSelectedTeam('');
-                          setInvitationLink('');
-                          setActiveSection('personalInformation');
-                        } catch (error) {
-                          console.error("Error saving user to users collection:", error);
-                          alert("Failed to add user.");
-                        }
+                      onClick={() => {
+                        setShowUserAddedModal(true);
+                        setIsAddingUser(false);
+                        setUserFormData({
+                          firstName: '',
+                          lastName: '',
+                          emailAddress: '',
+                          phoneNumber: '',
+                          shortDescription: '',
+                          memberRole: '',
+                        });
+                        setSelectedTeam('');
+                        setInvitationLink('');
+                        setActiveSection('personalInformation');
                       }}
                     >
                       Submit
@@ -404,7 +375,7 @@ function Users() {
             />
             <h2 style={{ marginBottom: '0px' }}>Success!</h2>
             <p style={{ marginTop: '0px' }}>
-              The user has been successfully added to the database.
+              The user invitation has been successfully created.
             </p>
             <button
               className='admin-button'
@@ -423,7 +394,6 @@ function Users() {
                 setInvitationLink('');
                 setSelected('');
                 setActiveSection('personalInformation');
-                fetchMembers();
               }}
             >
               Close
