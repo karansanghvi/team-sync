@@ -19,7 +19,7 @@ function UserInviteAccept() {
 
   const fetchInvitation = async () => {
     try {
-      const q = query(collection(db, 'pendingInvitations'), where('invitationId', '==', invitationId));
+      const q = query(collection(db, 'teamMembers'), where('invitationId', '==', invitationId));
       const snapshot = await getDocs(q);
       if (!snapshot.empty) {
         const data = snapshot.docs[0].data();
@@ -42,7 +42,7 @@ function UserInviteAccept() {
 
     setAccepting(true);
     try {
-      const inviteRef = doc(db, 'pendingInvitations', userData.docId);
+      const inviteRef = doc(db, 'teamMembers', userData.docId);
       await updateDoc(inviteRef, {
         invitationAccepted: true,
         acceptedAt: new Date()

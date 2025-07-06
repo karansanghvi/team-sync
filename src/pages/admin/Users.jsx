@@ -54,7 +54,7 @@ function Users() {
   };
 
   const fetchPendingInvites = () => {
-    const unsubscribe = onSnapshot(collection(db, 'pendingInvitations'), (snapshot) => {
+    const unsubscribe = onSnapshot(collection(db, 'teamMembers'), (snapshot) => {
       const inviteData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -100,7 +100,7 @@ function Users() {
         invitationAccepted: false
       };
 
-      await addDoc(collection(db, 'pendingInvitations'), {
+      await addDoc(collection(db, 'teamMembers'), {
         invitationId: id,
         ...inviteData
       });
