@@ -5,6 +5,7 @@ import { db } from '../../firebase';
 import '../../assets/styles/modal.css'
 import successAnimation from '../../assets/animations/success.json'; 
 import deleteAnimation from '../../assets/animations/delete.json';
+import noTeams from '../../assets/images/no_users.png';
 
 function Team() {
   const [isCreatingTeam, setIsCreatingTeam] = useState(false);
@@ -109,7 +110,12 @@ function Team() {
 
           <div className='team-details'>
             {teamList.length === 0 ? (
-              <p>No teams created yet.</p>
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', marginTop: '70px' }}>
+                  <img src={noTeams} alt='No Teams' width={200} height={200} />
+                  <h1 className='not-available'>No Teams Added Yet!!</h1>
+                </div>
+              </>
             ) : (
                <>
                 <div className='team'>

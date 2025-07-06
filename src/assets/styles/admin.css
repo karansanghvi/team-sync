@@ -399,7 +399,7 @@
 
 .not-available {
   color: white;
-  font-size: 15px;
+  font-size: 40px;
 }
 
 .user-table {
@@ -442,4 +442,22 @@
 }
 .user-table tbody tr:last-child td:last-child {
   border-bottom-right-radius: 10px;
+}
+
+.edit-button, .delete-button {
+  margin: 0 5px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.edit-button {
+  background-color: #ffb347;
+  color: white;
+}
+
+.delete-button {
+  background-color: #e74c3c;
+  color: white;
 }

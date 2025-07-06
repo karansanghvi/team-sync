@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import Lottie from 'lottie-react';
 import '../../assets/styles/admin.css';
-import { addDoc, collection, getDocs, onSnapshot } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDocs, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { v4 as uuidv4 } from 'uuid';
 import successAnimation from '../../assets/animations/success.json'; 
 import { FaRegCopy } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import deleteAnimation from '../../assets/animations/delete.json';
+import noUsers from '../../assets/images/no_users.png';
 
 function Users() {
   const [isAddingUser, setIsAddingUser] = useState(false);
@@ -17,6 +19,10 @@ function Users() {
   const [invitationLink, setInvitationLink] = useState('');
   const [showUserAddedModal, setShowUserAddedModal] = useState(false);
   const [pendingInvites, setPendingInvites] = useState([]);
+  const [isEditingUser, setIsEditingUser] = useState(false);
+  const [editingUserId, setEditingUserId] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
   const [userFormData, setUserFormData] = useState({
     firstName: '',
     lastName: '',
@@ -26,7 +32,47 @@ function Users() {
     memberRole: ''
   });
 
-  const handleAddUserClick = () => setIsAddingUser(true);
+  useEffect(() => {
+    if (showUserAddedModal) {
+      const timer = setTimeout(() => {
+        setShowUserAddedModal(false);
+        setIsAddingUser(false);
+        setIsEditingUser(false);
+        setUserFormData({
+          firstName: '',
+          lastName: '',
+          emailAddress: '',
+          phoneNumber: '',
+          shortDescription: '',
+          memberRole: '',
+        });
+        setSelectedTeam('');
+        setInvitationLink('');
+        setSelected('');
+        setActiveSection('personalInformation');
+      }, 3000); 
+
+      return () => clearTimeout(timer); 
+    }
+  }, [showUserAddedModal]);
+
+
+  const handleAddUserClick = () => {
+    setIsEditingUser(false);
+    setIsAddingUser(true);
+    setUserFormData({
+      firstName: '',
+      lastName: '',
+      emailAddress: '',
+      phoneNumber: '',
+      shortDescription: '',
+      memberRole: ''
+    });
+    setSelected('');
+    setSelectedTeam('');
+    setInvitationLink('');
+    setActiveSection('personalInformation');
+  };
 
   const memberRoles = [
     { label: "Manager", value: "manager" },
@@ -83,7 +129,7 @@ function Users() {
   const handleNextFromTeam = (e) => {
     e.preventDefault();
     if (!selectedTeam) {
-      toast.succes("Please select a team before proceeding.");
+      toast.success("Please select a team before proceeding.");
       return;
     }
     setActiveSection('invitation');
@@ -107,11 +153,43 @@ function Users() {
 
       const link = `http://localhost:5173/invite/${id}`; // Replace with deployed domain later
       setInvitationLink(link);
-      alert("Invitation link generated!");
     } catch (error) {
       console.error("Error creating invitation:", error);
     }
   };
+
+  const handleSaveEditedUser = async (e) => {
+    e.preventDefault();
+    try {
+      if (!editingUserId || !selectedTeam) return;
+      await updateDoc(doc(db, 'teamMembers', editingUserId), {
+        ...userFormData,
+        teamName: selectedTeam
+      });
+      setShowUserAddedModal(true);
+      setIsAddingUser(false);
+      setIsEditingUser(false);
+    } catch (err) {
+      console.error("Error updating user:", err);
+      toast.error('Failed to update user');
+    }
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+    try {
+      await deleteDoc(doc(db, 'teamMembers', userToDelete.id));
+      setShowDeleteModal(false);
+      setShowUserAddedModal(true); 
+    } catch (err) {
+      console.error("Error deleting user:", err);
+      toast.error('Failed to delete user');
+    } finally {
+      setUserToDelete(null);
+    }
+  };
+
+
 
   return (
     <>
@@ -126,7 +204,12 @@ function Users() {
 
           <div className='user-list'>
             {pendingInvites.length === 0 ? (
-              <p>No users added yet.</p>
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', marginTop: '70px' }}>
+                  <img src={noUsers} alt='No Users' width={200} height={200} />
+                  <h1 className='not-available'>No Users Added Yet!!</h1>
+                </div>
+              </>
             ) : (
               <table className='user-table'>
                 <thead>
@@ -138,6 +221,7 @@ function Users() {
                     <th>Team</th>
                     <th>Description</th>
                     <th>Status</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -167,6 +251,39 @@ function Users() {
                           </>
                         )}
                       </td>
+                      <td>
+                        <button
+                          className="edit-button"
+                          onClick={() => {
+                            setIsEditingUser(true);
+                            setIsAddingUser(true);
+                            setEditingUserId(user.id);
+                            setUserFormData({
+                              firstName: user.firstName,
+                              lastName: user.lastName,
+                              emailAddress: user.emailAddress,
+                              phoneNumber: user.phoneNumber,
+                              shortDescription: user.shortDescription,
+                              memberRole: user.memberRole
+                            });
+                            setSelected(user.memberRole);
+                            setSelectedTeam(user.teamName);
+                            setActiveSection('personalInformation');
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+  className="delete-button"
+  onClick={() => {
+    setUserToDelete(user);        // Set user to delete
+    setShowDeleteModal(true);     // Show confirmation modal
+  }}
+>
+  Delete
+</button>
+
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -176,13 +293,21 @@ function Users() {
         </>
       ) : (
         <div className='add-users-container'>
-          <h1 className='welcome-title'>Add Users</h1>
+          {/* <h1 className='welcome-title'>Add Users</h1> */}
+          <h1 className='welcome-title'>{isEditingUser ? 'Edit User' : 'Add Users'}</h1>
           <div className='user-grid-container'>
             {/* Left nav */}
             <div className='add-users-nav'>
               <h2 className={activeSection === 'personalInformation' ? 'active-nav' : ''} onClick={() => setActiveSection('personalInformation')}>Personal Information</h2>
               <h2 className={activeSection === 'team' ? 'active-nav' : ''} onClick={() => setActiveSection('team')}>Team & Role</h2>
-              <h2 className={activeSection === 'invitation' ? 'active-nav' : ''} onClick={() => setActiveSection('invitation')}>Invitation</h2>
+              {!isEditingUser && (
+                  <h2
+                    className={activeSection === 'invitation' ? 'active-nav' : ''}
+                    onClick={() => setActiveSection('invitation')}
+                  >
+                    Invitation
+                  </h2>
+                )}
             </div>
 
             <div className="vertical-divider"></div>
@@ -232,7 +357,7 @@ function Users() {
 
               {/* TEAM */}
               {activeSection === 'team' && (
-                <form onSubmit={handleNextFromTeam}>
+                <form onSubmit={isEditingUser ? handleSaveEditedUser : handleNextFromTeam}>
                   <h2 style={{ marginBottom: '0px' }}>Team & Role</h2>
                   <p style={{ marginTop: '0px' }}>Assign the user to a role and team.</p>
 
@@ -286,13 +411,18 @@ function Users() {
 
                   <div className='team-info-button-two'>
                     <button type='button' className='admin-button' onClick={() => setActiveSection('personalInformation')}>Back</button>
-                    <button type='submit' className='admin-button'>Next</button>
+                    {isEditingUser ? (
+                      <button type='submit' className='admin-button'>Save</button>
+                    ) : (
+                      <button type='submit' className='admin-button'>Next</button>
+                    )}
                   </div>
+
                 </form>
               )}
 
               {/* INVITATION */}
-              {activeSection === 'invitation' && (
+              {!isEditingUser && activeSection === 'invitation' &&  (
                 <form onSubmit={handleSubmitInvitation}>
                   <h2 style={{ marginBottom: '0px' }}>Invitation</h2>
                   <p style={{ marginTop: '0px' }}>Send an invitation to the user to join the team.</p>
@@ -361,44 +491,80 @@ function Users() {
       )}
 
       {/* USER ADDED MODAL */}
-      {showUserAddedModal && (
+        {showUserAddedModal && (
+          <div className="modal-overlay">
+            <div className="modal-box">
+              <Lottie 
+                animationData={successAnimation} 
+                loop={false} 
+                autoplay 
+                style={{ height: 150, width: 150, margin: '0 auto' }}
+              />
+              <h2 style={{ marginBottom: '0px' }}>Success!</h2>
+                <p style={{ marginTop: '0px' }}>
+                  {isEditingUser
+                    ? 'The user has been successfully updated.'
+                    : 'The user invitation has been successfully created.'}
+                </p>
+              <button
+                className='admin-button'
+                onClick={() => {
+                  setShowUserAddedModal(false);
+                  setIsAddingUser(false);
+                  setUserFormData({
+                    firstName: '',
+                    lastName: '',
+                    emailAddress: '',
+                    phoneNumber: '',
+                    shortDescription: '',
+                    memberRole: '',
+                  });
+                  setSelectedTeam('');
+                  setInvitationLink('');
+                  setSelected('');
+                  setActiveSection('personalInformation');
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+      
+      {showDeleteModal && (
         <div className="modal-overlay">
           <div className="modal-box">
             <Lottie 
-              animationData={successAnimation} 
-              loop={false} 
+              animationData={deleteAnimation} 
+              loop={true} 
               autoplay 
               style={{ height: 150, width: 150, margin: '0 auto' }}
             />
-            <h2 style={{ marginBottom: '0px' }}>Success!</h2>
-            <p style={{ marginTop: '0px' }}>
-              The user invitation has been successfully created.
+            <h2 style={{ marginBottom: '0px' }}>Confirm Deletion</h2>
+            <p style={{ marginTop: '8px' }}>
+              Are you sure you want to delete <strong>{userToDelete?.firstName} {userToDelete?.lastName}</strong>?
             </p>
-            <button
-              className='admin-button'
-              onClick={() => {
-                setShowUserAddedModal(false);
-                setIsAddingUser(false);
-                setUserFormData({
-                  firstName: '',
-                  lastName: '',
-                  emailAddress: '',
-                  phoneNumber: '',
-                  shortDescription: '',
-                  memberRole: '',
-                });
-                setSelectedTeam('');
-                setInvitationLink('');
-                setSelected('');
-                setActiveSection('personalInformation');
-              }}
-            >
-              Close
-            </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '24px' }}>
+              <button
+                className="admin-button"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setUserToDelete(null);
+                }}
+                style={{marginRight: '20px'}}
+              >
+                Cancel
+              </button>
+              <button
+                className="admin-button"
+                onClick={confirmDeleteUser}
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}
-
     </>
   );
 }
