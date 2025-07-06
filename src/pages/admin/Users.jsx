@@ -274,15 +274,14 @@ function Users() {
                           Edit
                         </button>
                         <button
-  className="delete-button"
-  onClick={() => {
-    setUserToDelete(user);        // Set user to delete
-    setShowDeleteModal(true);     // Show confirmation modal
-  }}
->
-  Delete
-</button>
-
+                          className="delete-button"
+                          onClick={() => {
+                            setUserToDelete(user);       
+                            setShowDeleteModal(true);    
+                          }}
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   ))}
