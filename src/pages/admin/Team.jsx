@@ -100,7 +100,7 @@ function Team() {
 
   return (
     <>
-    {/* TEAM HOME PAGE */}
+      {/* TEAM HOME PAGE */}
       {!isCreatingTeam && !isTeamInformation && (
         <>
           <div className='users-container'>
