@@ -9,7 +9,6 @@ import { FaRegCopy } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import deleteAnimation from '../../assets/animations/delete.json';
 import noUsers from '../../assets/images/no_users.png';
-import { IoArrowBackCircleSharp } from 'react-icons/io5';
 
 function Users() {
   const [isAddingUser, setIsAddingUser] = useState(false);

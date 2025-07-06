@@ -8,7 +8,6 @@ import deleteAnimation from '../../assets/animations/delete.json';
 import noTeams from '../../assets/images/no_users.png';
 import { FaEdit } from 'react-icons/fa';
 import { MdDelete } from 'react-icons/md';
-import { IoArrowBackCircleSharp } from 'react-icons/io5';
 
 function Team() {
   const [isCreatingTeam, setIsCreatingTeam] = useState(false);
