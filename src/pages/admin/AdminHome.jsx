@@ -22,9 +22,9 @@ function AdminHome({ fullName, onLogout }) {
       case 'profile':
         return <AdminProfile/>;
       case 'users':
-        return <Users/>;
+        return <Users onSelectSection = {setActiveSection} />;
       case 'team':
-        return <Team/>;
+        return <Team onSelectSection = {setActiveSection} />;
       case 'analytics':
         return <Analytics/>;
       case 'calendar':

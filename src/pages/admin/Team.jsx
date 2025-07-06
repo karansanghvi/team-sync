@@ -6,6 +6,9 @@ import '../../assets/styles/modal.css'
 import successAnimation from '../../assets/animations/success.json'; 
 import deleteAnimation from '../../assets/animations/delete.json';
 import noTeams from '../../assets/images/no_users.png';
+import { FaEdit } from 'react-icons/fa';
+import { MdDelete } from 'react-icons/md';
+import { IoArrowBackCircleSharp } from 'react-icons/io5';
 
 function Team() {
   const [isCreatingTeam, setIsCreatingTeam] = useState(false);
@@ -144,7 +147,10 @@ function Team() {
       {/* CREATE TEAM */}
       {isCreatingTeam && !isTeamInformation && (
         <div className='add-users-container'>
-          <h1 className='welcome-title'>{isEditingTeam ? 'Edit Team': 'Create Team'}</h1>
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+            {/* <IoArrowBackCircleSharp size={28} color='white' onClick={() => onSelectSection('team')} style={{ cursor: 'pointer' }} /> */}
+            <h1 className='welcome-title'>{isEditingTeam ? 'Edit Team': 'Create Team'}</h1>
+          </div>
           <div className='user-grid-container'>
             {/* NAVIGATION */}
             <div className='add-users-nav'>
@@ -241,7 +247,33 @@ function Team() {
       {/* TEAM DETAILS */}
       {isTeamInformation && selectedTeam && (
         <div className="team-details-section">
-          <h1 className="welcome-title">{selectedTeam.teamName}</h1>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+              {/* <IoArrowBackCircleSharp size={28} color='white' onClick={() => onSelectSection('team')} style={{ cursor: 'pointer' }} /> */}
+              <h1 className="welcome-title">{selectedTeam.teamName}</h1>
+            </div>
+            <div className="team-details-section" style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+              <FaEdit 
+                size={28} 
+                style={{ cursor: 'pointer' }} 
+                onClick={() => {
+                  setFormData({
+                    teamName: selectedTeam.teamName,
+                    teamDescription: selectedTeam.teamDescription,
+                    department: selectedTeam.department,
+                    subDepartment: selectedTeam.subDepartment,
+                    teamGoals: selectedTeam.teamGoals,
+                    teamLimit: selectedTeam.teamLimit
+                  });
+                  setSelected(selectedTeam.teamLimit);
+                  setIsCreatingTeam(true);
+                  setIsTeamInformation(false);
+                  setIsEditingTeam(true);
+                }}
+              />
+              <MdDelete size={28} style={{ cursor: 'pointer' }} onClick={() => setShowDeleteModal(true)} />
+            </div>
+          </div>
 
           <div className="card-grid">
             <div className="info-card">
@@ -260,30 +292,6 @@ function Team() {
               <h2  style={{marginBottom: '0px', marginTop: '0px'}}>Goals & Vision</h2>
               <p style={{marginTop: '4px', marginBottom: '4px'}}><strong>Goals:</strong> {selectedTeam.teamGoals}</p>
             </div>
-          </div>
-
-          <div className='team-info-button-two'>
-            <button type='button' className='admin-button' onClick={() => setShowDeleteModal(true)}>Delete</button>
-            <button
-              type='button'
-              className='admin-button'
-              onClick={() => {
-                setFormData({
-                  teamName: selectedTeam.teamName,
-                  teamDescription: selectedTeam.teamDescription,
-                  department: selectedTeam.department,
-                  subDepartment: selectedTeam.subDepartment,
-                  teamGoals: selectedTeam.teamGoals,
-                  teamLimit: selectedTeam.teamLimit
-                });
-                setSelected(selectedTeam.teamLimit);
-                setIsCreatingTeam(true);
-                setIsTeamInformation(false);
-                setIsEditingTeam(true);
-              }}
-            >
-              Edit
-            </button>
           </div>
         </div>
       )}

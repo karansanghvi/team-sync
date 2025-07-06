@@ -9,6 +9,7 @@ import { FaRegCopy } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import deleteAnimation from '../../assets/animations/delete.json';
 import noUsers from '../../assets/images/no_users.png';
+import { IoArrowBackCircleSharp } from 'react-icons/io5';
 
 function Users() {
   const [isAddingUser, setIsAddingUser] = useState(false);
@@ -274,14 +275,15 @@ function Users() {
                           Edit
                         </button>
                         <button
-                          className="delete-button"
-                          onClick={() => {
-                            setUserToDelete(user);       
-                            setShowDeleteModal(true);    
-                          }}
-                        >
-                          Delete
-                        </button>
+                        className="delete-button"
+                        onClick={() => {
+                          setUserToDelete(user);       
+                          setShowDeleteModal(true);    
+                        }}
+                      >
+                        Delete
+                      </button>
+
                       </td>
                     </tr>
                   ))}
@@ -292,8 +294,10 @@ function Users() {
         </>
       ) : (
         <div className='add-users-container'>
-          {/* <h1 className='welcome-title'>Add Users</h1> */}
-          <h1 className='welcome-title'>{isEditingUser ? 'Edit User' : 'Add Users'}</h1>
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+            {/* <IoArrowBackCircleSharp size={28} color='white' onClick={() => onSelectSection('users')} style={{ cursor: 'pointer' }} /> */}
+            <h1 className='welcome-title'>{isEditingUser ? 'Edit User' : 'Add Users'}</h1>
+          </div>
           <div className='user-grid-container'>
             {/* Left nav */}
             <div className='add-users-nav'>
