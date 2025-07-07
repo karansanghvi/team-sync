@@ -23,7 +23,8 @@ function Team() {
   const [teamMembers, setTeamMembers] = useState([]);
   const [selectedMember, setSelectedMember] = useState(null);
   const [isDeleteSuccess, setIsDeleteSuccess] = useState(false);
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [formData, setFormData] = useState({
     teamName: '',
     teamDescription: '',
@@ -144,7 +145,12 @@ function Team() {
 
   const handleGoToSelectedTeamFromSelectedMemberDetails = () => {
     setSelectedMember(null);
-  }
+  };
+
+  const indexOfLastMember = currentPage * rowsPerPage;
+  const indexOfFirstMember = indexOfLastMember - rowsPerPage;
+  const currentTeamMembers = teamMembers.slice(indexOfFirstMember, indexOfLastMember);
+  const totalPages = Math.ceil(teamMembers.length / rowsPerPage);
 
   return (
     <>
@@ -340,7 +346,6 @@ function Team() {
               <p style={{marginTop: '4px', marginBottom: '4px'}}><strong>Goals:</strong> {selectedTeam.teamGoals}</p>
             </div>
           </div>
-
           <div>
             {teamMembers.length > 0 ? (
               <div style={{ marginTop: '30px' }}>
@@ -358,7 +363,7 @@ function Team() {
                     </tr>
                   </thead>
                   <tbody>
-                    {teamMembers.map((member) => (
+                    {currentTeamMembers.map((member) => (
                       <tr key={member.id}>
                         <td>{member.firstName}</td>
                         <td>{member.lastName}</td>
@@ -373,6 +378,67 @@ function Team() {
                     ))}
                   </tbody>
                 </table>
+
+                {/* Pagination Controls */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px' }}>
+                  <div style={{ color: 'white' }}>
+                    {teamMembers.length > 0 &&
+                      `${indexOfFirstMember + 1}-${Math.min(indexOfLastMember, teamMembers.length)} of ${teamMembers.length}`}
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <label htmlFor="rowsPerPage" style={{ color: 'white' }}>Rows per page:</label>
+                    <select
+                      id="rowsPerPage"
+                      value={rowsPerPage}
+                      onChange={(e) => {
+                        setRowsPerPage(parseInt(e.target.value));
+                        setCurrentPage(1); // reset to first page on change
+                      }}
+                      style={{
+                        backgroundColor: 'white',
+                        color: 'black',
+                        border: '1px solid #444',
+                        borderRadius: '4px',
+                        padding: '4px',
+                        fontSize: '15px'
+                      }}
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                    </select>
+
+                    <button
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(prev => prev - 1)}
+                      style={{
+                        cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                        background: 'none',
+                        border: 'none',
+                        color: 'white',
+                        fontSize: '16px'
+                      }}
+                    >
+                      ◀
+                    </button>
+
+                    <button
+                      disabled={currentPage >= totalPages}
+                      onClick={() => setCurrentPage(prev => prev + 1)}
+                      style={{
+                        cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer',
+                        background: 'none',
+                        border: 'none',
+                        color: 'white',
+                        fontSize: '16px'
+                      }}
+                    >
+                      ▶
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
               <p style={{ marginTop: '30px' }}><i>No team members have accepted the invitation yet.</i></p>

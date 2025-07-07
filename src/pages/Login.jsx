@@ -44,7 +44,7 @@ function Login() {
   };
 
   return (
-    <section className='container'>
+    <section className='main-container'>
       <h1 className='title'>Welcome Back</h1>
       <div className='box'>
        <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>

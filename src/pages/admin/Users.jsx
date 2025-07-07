@@ -25,6 +25,8 @@ function Users() {
   const [editingUserId, setEditingUserId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [userFormData, setUserFormData] = useState({
     firstName: '',
     lastName: '',
@@ -229,6 +231,7 @@ function Users() {
                 </div>
               </>
             ) : (
+              <>
               <table className='user-table'>
                 <thead>
                   <tr>
@@ -243,7 +246,7 @@ function Users() {
                   </tr>
                 </thead>
                 <tbody>
-                  {pendingInvites.map((user) => (
+                  {pendingInvites.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage).map((user) => (
                     <tr key={user.id}>
                       <td>{user.firstName} {user.lastName}</td>
                       <td>{user.emailAddress}</td>
@@ -303,6 +306,65 @@ function Users() {
                   ))}
                 </tbody>
               </table>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px' }}>
+                <div style={{ color: 'white' }}>
+                  {pendingInvites.length > 0 && `${(currentPage - 1) * rowsPerPage + 1}-${Math.min(currentPage * rowsPerPage, pendingInvites.length)} of ${pendingInvites.length}`}
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <label htmlFor="rowsPerPage" style={{ color: 'white' }}>Rows per page:</label>
+                  <select
+                    id="rowsPerPage"
+                    value={rowsPerPage}
+                    onChange={(e) => {
+                      setRowsPerPage(parseInt(e.target.value));
+                      setCurrentPage(1); 
+                    }}
+                    style={{
+                      backgroundColor: 'white',
+                      color: 'black',
+                      border: '1px solid #444',
+                      borderRadius: '4px',
+                      padding: '4px',
+                      fontSize: '15px'
+                    }}
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                  </select>
+
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(prev => prev - 1)}
+                    style={{
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                      background: 'none',
+                      border: 'none',
+                      color: 'white',
+                      fontSize: '16px'
+                    }}
+                  >
+                    ◀
+                  </button>
+
+                  <button
+                    disabled={currentPage >= Math.ceil(pendingInvites.length / rowsPerPage)}
+                    onClick={() => setCurrentPage(prev => prev + 1)}
+                    style={{
+                      cursor: currentPage >= Math.ceil(pendingInvites.length / rowsPerPage) ? 'not-allowed' : 'pointer',
+                      background: 'none',
+                      border: 'none',
+                      color: 'white',
+                      fontSize: '16px'
+                    }}
+                  >
+                    ▶
+                  </button>
+                </div>
+              </div>
+              </>
             )}
           </div>
         </>
