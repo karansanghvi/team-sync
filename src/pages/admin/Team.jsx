@@ -8,6 +8,7 @@ import deleteAnimation from '../../assets/animations/delete.json';
 import noTeams from '../../assets/images/no_users.png';
 import { FaEdit } from 'react-icons/fa';
 import { MdDelete } from 'react-icons/md';
+import { IoArrowBackCircleSharp } from 'react-icons/io5';
 
 function Team() {
   const [isCreatingTeam, setIsCreatingTeam] = useState(false);
@@ -20,6 +21,7 @@ function Team() {
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [isEditingTeam, setIsEditingTeam] = useState(false);
   const [teamMembers, setTeamMembers] = useState([]);
+  const [selectedMember, setSelectedMember] = useState(null);
   const [isDeleteSuccess, setIsDeleteSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -120,10 +122,34 @@ function Team() {
     }
   };
 
+  const handleGoToTeamPageFromCreateTeam = () => {
+    setIsCreatingTeam(false);
+    setIsEditingTeam(false);
+    setFormData({
+      teamName: '',
+      teamDescription: '',
+      department: '',
+      subDepartment: '',
+      teamGoals: '',
+      teamLimit: '',
+    });
+    setSelected('');
+    setActiveSection('basic Information');
+  };
+
+  const handleGoToTeamPageFromTeamDetails = () => {
+    setIsTeamInformation(false);
+    setSelectedTeam(null);
+  };
+
+  const handleGoToSelectedTeamFromSelectedMemberDetails = () => {
+    setSelectedMember(null);
+  }
+
   return (
     <>
       {/* TEAM HOME PAGE */}
-      {!isCreatingTeam && !isTeamInformation && (
+      {!isCreatingTeam && !isTeamInformation && !selectedMember && (
         <>
           <div className='users-container'>
             <h1 className='welcome-title'>Team</h1>
@@ -166,10 +192,10 @@ function Team() {
       )}
 
       {/* CREATE TEAM */}
-      {isCreatingTeam && !isTeamInformation && (
+      {isCreatingTeam && !isTeamInformation && !selectedMember && (
         <div className='add-users-container'>
           <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-            {/* <IoArrowBackCircleSharp size={28} color='white' onClick={() => onSelectSection('team')} style={{ cursor: 'pointer' }} /> */}
+            <IoArrowBackCircleSharp size={28} color='white' style={{ cursor: 'pointer' }} onClick={handleGoToTeamPageFromCreateTeam} />
             <h1 className='welcome-title'>{isEditingTeam ? 'Edit Team': 'Create Team'}</h1>
           </div>
           <div className='user-grid-container'>
@@ -266,10 +292,11 @@ function Team() {
       )}
 
       {/* TEAM DETAILS */}
-      {isTeamInformation && selectedTeam && (
+      {isTeamInformation && selectedTeam && !selectedMember && (
         <div className="team-details-section">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+              <IoArrowBackCircleSharp size={28} color='white' style={{ cursor: 'pointer' }} onClick={handleGoToTeamPageFromTeamDetails} />
               <h1 className="welcome-title">Team Name: {selectedTeam.teamName}</h1>
             </div>
             <div className="team-details-section" style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
@@ -339,6 +366,9 @@ function Team() {
                         <td>{member.phoneNumber}</td>
                         <td>{member.memberRole}</td>
                         <td>{member.shortDescription}</td>
+                        <td>
+                          <button className='team-member-button' onClick={() => setSelectedMember(member)}>View Details</button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -347,6 +377,23 @@ function Team() {
             ) : (
               <p style={{ marginTop: '30px' }}><i>No team members have accepted the invitation yet.</i></p>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* SELECTED MEMBER DETAILS */}
+      {selectedMember && (
+        <div className='member-details-section'>
+           <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+              <IoArrowBackCircleSharp size={28} color='white' style={{ cursor: 'pointer' }} onClick={handleGoToSelectedTeamFromSelectedMemberDetails} />
+              <h1 className="welcome-title">Team Member Details</h1>
+            </div>
+          <div className='info-card' style={{ color: 'white' }}>
+            <p><strong>Name:</strong> {selectedMember.firstName} {selectedMember.lastName}</p>
+            <p><strong>Email:</strong> {selectedMember.emailAddress}</p>
+            <p><strong>Phone:</strong> {selectedMember.phoneNumber}</p>
+            <p><strong>Role:</strong> {selectedMember.memberRole}</p>
+            <p><strong>Description:</strong> {selectedMember.shortDescription}</p>
           </div>
         </div>
       )}

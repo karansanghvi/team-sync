@@ -106,7 +106,7 @@
 
 /* Dashboard */
 .welcome-title {
-    color: whitesmoke;
+  color: whitesmoke;
 }
 
 /* Members */
@@ -138,6 +138,29 @@
   margin-right: auto;
   width: 100%;
   max-width: 140px;
+  transition: all 0.3s ease-in-out;
+}
+
+.team-member-button {
+  all: unset;
+  display: inline-block;
+  border-radius: 10px;
+  background-color: #007BFF;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  cursor: pointer;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 120px;
   transition: all 0.3s ease-in-out;
 }
 
