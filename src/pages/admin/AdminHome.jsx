@@ -26,8 +26,8 @@ function AdminHome({ fullName, onLogout }) {
         return <Users onSelectSection = {setActiveSection} />;
       case 'team':
         return <Team onSelectSection = {setActiveSection} />;
-      case 'analytics':
-        return <Analytics/>;
+      // case 'analytics':
+      //   return <Analytics/>;
       case 'calendar':
         return <Calendar/>;
       // case 'meetings':
