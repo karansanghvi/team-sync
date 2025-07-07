@@ -19,6 +19,7 @@ function Team() {
   const [teamList, setTeamList] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [isEditingTeam, setIsEditingTeam] = useState(false);
+  const [teamMembers, setTeamMembers] = useState([]);
   const [isDeleteSuccess, setIsDeleteSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -79,6 +80,27 @@ function Team() {
   useEffect(() => {
     fetchTeams();
   }, []);
+
+  useEffect(() => {
+    const fetchTeamMembers = async () => {
+      if (!selectedTeam?.teamName) return;
+
+      try {
+        const querySnapshot = await getDocs(collection(db, 'teamMembers'));
+        const members = querySnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(
+            member =>
+              member.teamName === selectedTeam.teamName &&
+              member.invitationAccepted === true
+          );
+        setTeamMembers(members);
+      } catch (error) {
+        console.error("Error fetching team members: ", error);
+      }
+    };
+    fetchTeamMembers();
+  }, [selectedTeam]);
 
   const confirmDeleteTeam = async () => {
     if (!selectedTeam?.id) return;
@@ -248,8 +270,7 @@ function Team() {
         <div className="team-details-section">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-              {/* <IoArrowBackCircleSharp size={28} color='white' onClick={() => onSelectSection('team')} style={{ cursor: 'pointer' }} /> */}
-              <h1 className="welcome-title">{selectedTeam.teamName}</h1>
+              <h1 className="welcome-title">Team Name: {selectedTeam.teamName}</h1>
             </div>
             <div className="team-details-section" style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
               <FaEdit 
@@ -291,6 +312,41 @@ function Team() {
               <h2  style={{marginBottom: '0px', marginTop: '0px'}}>Goals & Vision</h2>
               <p style={{marginTop: '4px', marginBottom: '4px'}}><strong>Goals:</strong> {selectedTeam.teamGoals}</p>
             </div>
+          </div>
+
+          <div>
+            {teamMembers.length > 0 ? (
+              <div style={{ marginTop: '30px' }}>
+                <h2>Team Members</h2>
+                <table className='user-table'>
+                  <thead>
+                    <tr>
+                      <th>First Name</th>
+                      <th>Last Name</th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th>Role</th>
+                      <th>Short Description</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {teamMembers.map((member) => (
+                      <tr key={member.id}>
+                        <td>{member.firstName}</td>
+                        <td>{member.lastName}</td>
+                        <td>{member.emailAddress}</td>
+                        <td>{member.phoneNumber}</td>
+                        <td>{member.memberRole}</td>
+                        <td>{member.shortDescription}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p style={{ marginTop: '30px' }}><i>No team members have accepted the invitation yet.</i></p>
+            )}
           </div>
         </div>
       )}
