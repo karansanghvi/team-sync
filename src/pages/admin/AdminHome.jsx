@@ -5,6 +5,7 @@ import Users from './Users';
 import Team from './Team';
 import Analytics from './Analytics';
 import Calendar from './Calendar';
+import AdminDashboard from './AdminDashboard';
 
 function AdminHome({ fullName, onLogout }) {
   const [activeSection, setActiveSection] = useState('dashboard');
@@ -19,8 +20,8 @@ function AdminHome({ fullName, onLogout }) {
 
   const renderContent = () => {
     switch (activeSection) {
-      case 'profile':
-        return <AdminProfile/>;
+      // case 'profile':
+      //   return <AdminProfile/>;
       case 'users':
         return <Users onSelectSection = {setActiveSection} />;
       case 'team':
@@ -29,13 +30,18 @@ function AdminHome({ fullName, onLogout }) {
         return <Analytics/>;
       case 'calendar':
         return <Calendar/>;
-      case 'meetings':
-        return <Logout/>;
+      // case 'meetings':
+      //   return <Logout/>;
       case 'logout':
         onLogout();
         return
       default:
-        return <h1 className='welcome-title'>{timeGreeting}, {fullName}</h1>;
+        return (
+          <div>
+            <h1 className='welcome-title'>{timeGreeting}, {fullName}</h1>
+            <AdminDashboard />
+          </div>
+        );
     }
   };
 

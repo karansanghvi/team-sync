@@ -5,10 +5,12 @@ import { addDoc, collection, deleteDoc, doc, getDocs, onSnapshot, updateDoc } fr
 import { db } from '../../firebase';
 import { v4 as uuidv4 } from 'uuid';
 import successAnimation from '../../assets/animations/success.json'; 
-import { FaRegCopy } from 'react-icons/fa';
+import { FaEdit, FaRegCopy } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import deleteAnimation from '../../assets/animations/delete.json';
 import noUsers from '../../assets/images/no_users.png';
+import { MdDelete } from 'react-icons/md';
+import { IoArrowBackCircleSharp } from 'react-icons/io5';
 
 function Users() {
   const [isAddingUser, setIsAddingUser] = useState(false);
@@ -158,6 +160,23 @@ function Users() {
     }
   };
 
+  const handleGoToUserPageFromAddUser = () => {
+    setIsAddingUser(false);
+    setIsEditingUser(false);
+    setUserFormData({
+      firstName: '',
+      lastName: '',
+      emailAddress: '',
+      phoneNumber: '',
+      shortDescription: '',
+      memberRole: ''
+    });
+    setSelected('');
+    setSelectedTeam('');
+    setInvitationLink('');
+    setActiveSection('personalInformation');
+  };
+
   const handleSaveEditedUser = async (e) => {
     e.preventDefault();
     try {
@@ -189,12 +208,11 @@ function Users() {
     }
   };
 
-
-
   return (
     <>
       {!isAddingUser ? (
         <>
+          {/* USERS HOME PAGE */}
           <div className='users-container'>
             <h1 className='welcome-title'>Users</h1>
             <div className='button-container'>
@@ -252,8 +270,9 @@ function Users() {
                         )}
                       </td>
                       <td>
-                        <button
-                          className="edit-button"
+                        <FaEdit 
+                          size={28} 
+                          style={{ cursor: 'pointer', marginRight: '5px' }} 
                           onClick={() => {
                             setIsEditingUser(true);
                             setIsAddingUser(true);
@@ -270,19 +289,15 @@ function Users() {
                             setSelectedTeam(user.teamName);
                             setActiveSection('personalInformation');
                           }}
-                        >
-                          Edit
-                        </button>
-                        <button
-                        className="delete-button"
-                        onClick={() => {
-                          setUserToDelete(user);       
-                          setShowDeleteModal(true);    
-                        }}
-                      >
-                        Delete
-                      </button>
-
+                        />
+                        <MdDelete 
+                          size={28} 
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => {
+                            setUserToDelete(user);       
+                            setShowDeleteModal(true);    
+                          }}
+                        />
                       </td>
                     </tr>
                   ))}
@@ -294,7 +309,7 @@ function Users() {
       ) : (
         <div className='add-users-container'>
           <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-            {/* <IoArrowBackCircleSharp size={28} color='white' onClick={() => onSelectSection('users')} style={{ cursor: 'pointer' }} /> */}
+            <IoArrowBackCircleSharp size={28} color='white' onClick={handleGoToUserPageFromAddUser} />
             <h1 className='welcome-title'>{isEditingUser ? 'Edit User' : 'Add Users'}</h1>
           </div>
           <div className='user-grid-container'>
@@ -493,7 +508,7 @@ function Users() {
       )}
 
       {/* USER ADDED MODAL */}
-        {showUserAddedModal && (
+      {showUserAddedModal && (
           <div className="modal-overlay">
             <div className="modal-box">
               <Lottie 
@@ -531,8 +546,9 @@ function Users() {
               </button>
             </div>
           </div>
-        )}
+      )}
       
+      {/* USER DELETE MODAL */}
       {showDeleteModal && (
         <div className="modal-overlay">
           <div className="modal-box">

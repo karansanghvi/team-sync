@@ -8,12 +8,12 @@ const AdminHeader = ({ onSelectSection }) => {
 
       <nav className="nav-links">
         <button onClick={() => onSelectSection('dashboard')}>Dashboard</button>
-        <button onClick={() => onSelectSection('profile')}>Profile</button>
+        {/* <button onClick={() => onSelectSection('profile')}>Profile</button> */}
         <button onClick={() => onSelectSection('users')}>Users</button>
         <button onClick={() => onSelectSection('team')}>Team</button>
         <button onClick={() => onSelectSection('analytics')}>Analytics</button>
         <button onClick={() => onSelectSection('calendar')}>Calendar</button>
-        <button onClick={() => onSelectSection('meetings')}>Meetings</button>
+        {/* <button onClick={() => onSelectSection('meetings')}>Meetings</button> */}
         <button className="logout-btn" onClick={() => onSelectSection('logout')}>Logout</button>
       </nav>
     </header>

@@ -386,14 +386,13 @@ function Team() {
         <div className='member-details-section'>
            <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
               <IoArrowBackCircleSharp size={28} color='white' style={{ cursor: 'pointer' }} onClick={handleGoToSelectedTeamFromSelectedMemberDetails} />
-              <h1 className="welcome-title">Team Member Details</h1>
+              <h1 className="welcome-title">Team Member: {selectedMember.firstName} {selectedMember.lastName}</h1>
             </div>
           <div className='info-card' style={{ color: 'white' }}>
-            <p><strong>Name:</strong> {selectedMember.firstName} {selectedMember.lastName}</p>
-            <p><strong>Email:</strong> {selectedMember.emailAddress}</p>
-            <p><strong>Phone:</strong> {selectedMember.phoneNumber}</p>
-            <p><strong>Role:</strong> {selectedMember.memberRole}</p>
-            <p><strong>Description:</strong> {selectedMember.shortDescription}</p>
+             <p style={{marginTop: '2px', marginBottom: '2px'}}><strong>Email Address:</strong> {selectedMember.emailAddress}</p>
+             <p style={{marginTop: '0px', marginBottom: '2px'}}><strong>Phone Number:</strong> {selectedMember.phoneNumber}</p>
+             <p style={{marginTop: '2px', marginBottom: '2px'}}><strong>Role:</strong> {selectedMember.memberRole}</p>
+             <p style={{marginTop: '0px', marginBottom: '2px'}}><strong>Description:</strong> {selectedMember.shortDescription}</p>
           </div>
         </div>
       )}

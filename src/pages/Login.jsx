@@ -36,6 +36,7 @@ function Login() {
 
         console.log(`User: ${fullName}, Role: ${role}`);
         navigate('/dashboard');
+        localStorage.setItem('userUID', user.uid);
     } catch (error) {
         toast.error('Login failed: ' + error.message);
         console.log("Login failed: " + error.message);

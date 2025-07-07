@@ -69,41 +69,6 @@
   background-color: white;
 }
 
-/* Responsive Styles Of Header */
-@media (max-width: 1024px) {
-  .logo {
-    margin-left: 50px;
-  }
-
-  .nav-links {
-    position: absolute;
-    top: 65px;
-    right: 0;
-    background-color: #1e293b;
-    flex-direction: column;
-    width: 100%;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
-  }
-
-  .nav-links.open {
-    max-height: 600px;
-    padding: 20px 0;
-  }
-
-  .nav-links a,
-  .logout-btn {
-    padding: 10px 20px;
-    width: 100%;
-    text-align: center;
-  }
-
-  .hamburger {
-    display: flex;
-  }
-}
-
 /* Dashboard */
 .welcome-title {
   color: whitesmoke;

@@ -35,7 +35,6 @@ function Dashboard() {
 
   return (
     <div className="container">
-      {/* Admin Role */}
       {role === 'admin' && (
         <div>
             <AdminHome fullName={fullName} onLogout={logout} />
