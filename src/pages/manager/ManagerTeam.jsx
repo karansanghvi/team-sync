@@ -206,17 +206,24 @@ function ManagerTeam() {
             </div>
           </div>
 
-          <h2 style={{ marginBottom: '10px', color: 'white' }}>Assigned Tasks</h2>
+          <h2 style={{ marginBottom: '10px', color: 'white', marginTop: '40px' }}>Assigned Tasks</h2>
           <div className='info-card' style={{ color: 'white' }}>
             {assignedTasks.length === 0 ? (
               <p>No assigned tasks yet.</p>
             ) : (
               <ul style={{ paddingLeft: '20px', listStyle: 'none' }}>
-                {assignedTasks.map((task) => (
+                {assignedTasks.map((task, index) => (
                   <li key={task.id} style={{ marginBottom: '10px' }}>
-                    <p style={{marginTop: '2px', marginBottom: '2px'}}><strong>Task Title: </strong>{task.taskTitle}</p>
-                    <p style={{marginTop: '0px', marginBottom: '2px'}}><strong>Description: </strong>{task.taskDescription}</p>
+                    <p style={{ marginTop: '2px', marginBottom: '2px' }}>
+                      <strong>Task Title:</strong> {task.taskTitle}
+                    </p>
+                    <p style={{ marginTop: '0px', marginBottom: '2px' }}>
+                      <strong>Description:</strong> {task.taskDescription}
+                    </p>
                     <span><strong>Due Date:</strong> {task.dueDate}</span>
+                    {index !== assignedTasks.length - 1 && (
+                      <hr style={{ margin: '10px 0', border: '0', borderTop: '1px solid #ccc' }} />
+                    )}
                   </li>
                 ))}
               </ul>
