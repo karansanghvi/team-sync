@@ -5,17 +5,25 @@ import {
   where,
   getDocs,
   doc,
-  updateDoc
+  updateDoc,
+  setDoc
 } from 'firebase/firestore';
-import { useParams } from 'react-router-dom';
-import { db } from '../../firebase';
+import { useParams, useNavigate } from 'react-router-dom';
+import { auth, db } from '../../firebase';
 import { toast } from 'react-toastify';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import InviteHeader from './InviteHeader';
+import '../../index.css';
 
 function UserInviteAccept() {
   const { invitationId } = useParams();
+  const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [accepting, setAccepting] = useState(false);
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [password, setPassword] = useState('');
+  const [savingPassword, setSavingPassword] = useState(false);
 
   const fetchInvitation = async () => {
     try {
@@ -25,10 +33,11 @@ function UserInviteAccept() {
         const data = snapshot.docs[0].data();
         setUserData({ ...data, docId: snapshot.docs[0].id });
       } else {
-        toast.sucess('Invalid or expired invitation.');
+        toast.error('Invalid or expired invitation.');
       }
     } catch (error) {
       console.error('Error fetching invitation:', error);
+      toast.error('Something went wrong while fetching the invitation.');
     } finally {
       setLoading(false);
     }
@@ -47,10 +56,14 @@ function UserInviteAccept() {
         invitationAccepted: true,
         acceptedAt: new Date()
       });
-      console.log("Invitation accepted successfully!");
+
       toast.success("Invitation accepted successfully! Welcome to the team!");
-      
       setUserData(prev => ({ ...prev, invitationAccepted: true }));
+
+      // If the user is a manager, show password form
+      if (userData.memberRole === 'manager') {
+        setShowPasswordForm(true);
+      }
     } catch (error) {
       console.error("Error accepting invitation:", error);
       toast.error("Failed to accept invitation. Please try again.");
@@ -58,6 +71,72 @@ function UserInviteAccept() {
       setAccepting(false);
     }
   };
+
+  // const handlePasswordSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   if (!password) {
+  //     toast.error('Password cannot be empty');
+  //     return;
+  //   }
+
+  //   setSavingPassword(true);
+  //   try {
+  //     await addDoc(collection(db, 'managers'), {
+  //       firstName: userData.firstName,
+  //       lastName: userData.lastName,
+  //       phoneNumber: userData.phoneNumber,
+  //       email: userData.emailAddress,
+  //       password: password, 
+  //       teamName: userData.teamName || '',
+  //       role: userData.memberRole,
+  //       shortDescription: userData.shortDescription,
+  //       createdAt: new Date()
+  //     });
+
+  //     toast.success('Account setup successfully!');
+  //     navigate('/manager-dashboard');
+  //   } catch (error) {
+  //     console.error("Error saving manager credentials:", error);
+  //     toast.error('Failed to set password. Please try again.');
+  //   } finally {
+  //     setSavingPassword(false);
+  //   }
+  // };
+
+  const handlePasswordSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!password) {
+    toast.error('Password cannot be empty');
+    return;
+  }
+
+  setSavingPassword(true);
+  try {
+    // Step 1: Register manager with Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(auth, userData.emailAddress, password);
+    const user = userCredential.user;
+
+    // Step 2: Save manager info in Firestore
+    await setDoc(doc(db, 'managers', user.uid), {
+      email: user.email,
+      teamId: userData.teamId || '',
+      teamName: userData.teamName || '',
+      role: userData.memberRole || 'manager',
+      fullName: userData.firstName || '',
+      createdAt: new Date()
+    });
+
+    toast.success('Account setup successfully!');
+    navigate('/manager-dashboard');
+  } catch (error) {
+    console.error("Error creating manager account:", error);
+    toast.error('Failed to create account: ' + error.message);
+  } finally {
+    setSavingPassword(false);
+  }
+};
 
   useEffect(() => {
     fetchInvitation();
@@ -67,16 +146,49 @@ function UserInviteAccept() {
 
   return userData ? (
     <>
-      <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '60px', fontWeight: 600, color: 'white' }}>TeamSync</div>
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
-        <section className='container'>
+      <div className='container'>
+        <InviteHeader />
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+        <section style={{ marginTop: '100px' }}>
           <div className='box'>
             {userData.invitationAccepted ? (
               <>
-                <h1 style={{ textAlign: 'center' }}>Welcome to the team, {userData.firstName}! 🎉</h1>
-                <p style={{ textAlign: 'center' }}>
-                  Your invitation has been accepted successfully. You're now part of the <strong>{userData.teamName}</strong> team as a <strong>{userData.memberRole}</strong>.
-                </p>
+                {userData.memberRole === 'manager' && showPasswordForm && (
+                  <>
+                  <h1>Setup Your Manager Account</h1>
+                  <form onSubmit={handlePasswordSubmit}>
+                    <div className='parent-box'>
+                      <label htmlFor="email">Email Address:</label>
+                      <input 
+                        type="email" 
+                        value={userData.emailAddress} 
+                        disabled 
+                        className='input-box'
+                      />
+                    </div>
+                    <div className='parent-box'>
+                      <label htmlFor="password">Password:</label>
+                      <input 
+                        type="password" 
+                        value={password} 
+                        onChange={(e) => setPassword(e.target.value)} 
+                        placeholder="Set your password" 
+                        className='input-box'
+                      />
+                    </div>
+                    <div style={{ marginTop: '20px', marginBottom: '20px' }}>
+                      <button 
+                        className="login-button" 
+                        type="submit"
+                        disabled={savingPassword}
+                      >
+                        {savingPassword ? 'Saving...' : 'Set Password'}
+                      </button>
+                    </div>
+                  </form>
+                  </>
+                )}
               </>
             ) : (
               <>

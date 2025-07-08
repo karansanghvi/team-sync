@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import UserInviteAccept from './pages/invites/UserInviteAccept'
+import ManagerDashboard from './pages/manager/ManagerDashboard'
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/invite/:invitationId" element={<UserInviteAccept/>}/>
+          <Route path="/manager-dashboard" element={<ManagerDashboard/>}/>
         </Routes>
       </Router>
 

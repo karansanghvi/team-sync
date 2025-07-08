@@ -13,7 +13,7 @@ function HeroBanner() {
     <>
       <section className='heroSection'>
         <h1>TeamSync</h1>
-        <div className="container">
+        <div className="main-container">
             <button 
               id="btnGetStarted" 
               onClick={handleGetStartedButton} 
