@@ -72,38 +72,6 @@ function UserInviteAccept() {
     }
   };
 
-  // const handlePasswordSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   if (!password) {
-  //     toast.error('Password cannot be empty');
-  //     return;
-  //   }
-
-  //   setSavingPassword(true);
-  //   try {
-  //     await addDoc(collection(db, 'managers'), {
-  //       firstName: userData.firstName,
-  //       lastName: userData.lastName,
-  //       phoneNumber: userData.phoneNumber,
-  //       email: userData.emailAddress,
-  //       password: password, 
-  //       teamName: userData.teamName || '',
-  //       role: userData.memberRole,
-  //       shortDescription: userData.shortDescription,
-  //       createdAt: new Date()
-  //     });
-
-  //     toast.success('Account setup successfully!');
-  //     navigate('/manager-dashboard');
-  //   } catch (error) {
-  //     console.error("Error saving manager credentials:", error);
-  //     toast.error('Failed to set password. Please try again.');
-  //   } finally {
-  //     setSavingPassword(false);
-  //   }
-  // };
-
   const handlePasswordSubmit = async (e) => {
   e.preventDefault();
 
@@ -114,17 +82,17 @@ function UserInviteAccept() {
 
   setSavingPassword(true);
   try {
-    // Step 1: Register manager with Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(auth, userData.emailAddress, password);
     const user = userCredential.user;
 
-    // Step 2: Save manager info in Firestore
     await setDoc(doc(db, 'managers', user.uid), {
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      phoneNumber: userData.phoneNumber,
       email: user.email,
-      teamId: userData.teamId || '',
       teamName: userData.teamName || '',
       role: userData.memberRole || 'manager',
-      fullName: userData.firstName || '',
+      shortDescription: userData.shortDescription,
       createdAt: new Date()
     });
 

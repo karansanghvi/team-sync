@@ -5,7 +5,7 @@ import { db } from '../../firebase';
 import '../../assets/styles/modal.css'
 import successAnimation from '../../assets/animations/success.json'; 
 import deleteAnimation from '../../assets/animations/delete.json';
-import noTeams from '../../assets/images/no_users.png';
+import noTeams from "../../assets/images/team.png";
 import { FaEdit } from 'react-icons/fa';
 import { MdDelete } from 'react-icons/md';
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
@@ -186,7 +186,7 @@ function Team() {
                           setIsTeamInformation(true);  
                         }}
                       >
-                        More Info
+                        View More
                       </button>
                     </div>
                   ))}
@@ -336,7 +336,7 @@ function Team() {
             </div>
 
             <div className="info-card">
-              <h2 style={{marginBottom: '0px' , marginTop: '0px'}}>Department Info</h2>
+              <h2 style={{marginBottom: '0px' , marginTop: '0px'}}>Department Information</h2>
               <p style={{marginTop: '4px', marginBottom: '4px'}}><strong>Department:</strong> {selectedTeam.department}</p>
               <p style={{marginTop: '0px', marginBottom: '4px'}}><strong>Sub-Department:</strong> {selectedTeam.subDepartment}</p>
             </div>
@@ -358,6 +358,7 @@ function Team() {
                       <th>Email</th>
                       <th>Phone</th>
                       <th>Role</th>
+                      <th>Team Name</th>
                       <th>Short Description</th>
                       <th>Actions</th>
                     </tr>
@@ -370,6 +371,7 @@ function Team() {
                         <td>{member.emailAddress}</td>
                         <td>{member.phoneNumber}</td>
                         <td>{member.memberRole}</td>
+                        <td>{member.teamName}</td>
                         <td>{member.shortDescription}</td>
                         <td>
                           <button className='team-member-button' onClick={() => setSelectedMember(member)}>View Details</button>
@@ -393,7 +395,7 @@ function Team() {
                       value={rowsPerPage}
                       onChange={(e) => {
                         setRowsPerPage(parseInt(e.target.value));
-                        setCurrentPage(1); // reset to first page on change
+                        setCurrentPage(1); 
                       }}
                       style={{
                         backgroundColor: 'white',
@@ -458,6 +460,7 @@ function Team() {
              <p style={{marginTop: '2px', marginBottom: '2px'}}><strong>Email Address:</strong> {selectedMember.emailAddress}</p>
              <p style={{marginTop: '0px', marginBottom: '2px'}}><strong>Phone Number:</strong> {selectedMember.phoneNumber}</p>
              <p style={{marginTop: '2px', marginBottom: '2px'}}><strong>Role:</strong> {selectedMember.memberRole}</p>
+             <p style={{marginTop: '2px', marginBottom: '2px'}}><strong>Team Name:</strong> {selectedMember.teamName}</p>
              <p style={{marginTop: '0px', marginBottom: '2px'}}><strong>Description:</strong> {selectedMember.shortDescription}</p>
           </div>
         </div>
