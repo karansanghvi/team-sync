@@ -1,16 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '../../firebase';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { addDoc, collection, getDocs, query, serverTimestamp, where } from 'firebase/firestore';
 import noTeams from "../../assets/images/team.png";
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
+import { toast } from 'react-toastify';
 
 function ManagerTeam() {
   const [teamDetails, setTeamDetails] = useState(null);
-  const [showDetails, setShowDetails] = useState(false); 
+  const [showDetails, setShowDetails] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null);
   const [currentTeamMembers, setCurrentTeamMembers] = useState([]);
+  const [showAssignTaskForm, setShowAssignTaskForm] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [taskTitle, setTaskTitle] = useState('');
+  const [taskDescription, setTaskDescription] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [assignedTasks, setAssignedTasks] = useState([]);
 
   const indexOfLastMember = currentPage * rowsPerPage;
   const indexOfFirstMember = indexOfLastMember - rowsPerPage;
@@ -71,169 +78,311 @@ function ManagerTeam() {
     fetchTeamDetails();
   }, []);
 
+  useEffect(() => {
+    const fetchAssignedTasks = async () => {
+      if (!selectedMember) return;
+
+      try {
+        const tasksQuery = query(
+          collection(db, 'tasks'),
+          where('assignedTo', '==', selectedMember.emailAddress)
+        );
+
+        const tasksSnapshot = await getDocs(tasksQuery);
+        const tasks = tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setAssignedTasks(tasks);
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+      }
+    };  
+
+    fetchAssignedTasks();
+  }, [selectedMember]);
+
   const handleGoToManagerTeamFromTeamDetails = () => {
     setShowDetails(false);
   };
 
+  const handleGoToSelectedTeamFromSelectedMemberDetails = () => {
+    setSelectedMember(null);
+  };
+
+  const handleTaskSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!taskTitle || !taskDescription || !dueDate) {
+      toast.info("All fields are required");
+      return;
+    }
+
+    try {
+      const user = auth.currentUser;
+
+      await addDoc(collection(db, "tasks"), {
+        taskTitle,
+        taskDescription,
+        dueDate,
+        assignedTo: selectedMember.emailAddress,
+        assignedToName: `${selectedMember.firstName} ${selectedMember.lastName}`,
+        teamName: selectedMember.teamName,
+        assignedBy: user.email,
+        assignedByName: user.displayName || 'Manager',
+        createdAt: serverTimestamp()
+      });
+
+      toast.success("Task assigned successfully!!");
+      setTaskTitle('');
+      setTaskDescription('');
+      setDueDate('');
+      setShowAssignTaskForm(false);
+    } catch (error) {
+      console.error("Error assigning task:", error);
+      toast.error("Error assigning task");
+    }
+  };
+
   return (
-    <>
-      {teamDetails ? (
-        showDetails ? (
-          // SELECTED TEAM DETAILS PAGE
-        <>
-            <div className='team-details-section'>
-                <div>
-                    <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                        <IoArrowBackCircleSharp size={28} color='white' style={{ cursor: 'pointer' }} onClick={handleGoToManagerTeamFromTeamDetails} />
-                        <h1 className="welcome-title">Team Name: {teamDetails.teamName}</h1>
-                    </div>
-                </div>
+  <>
+    {teamDetails ? (
+      showAssignTaskForm ? (
+        // Assign Task Form Page
+        <div className='assign-task-section'>
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+            <IoArrowBackCircleSharp
+              size={28}
+              color='white'
+              style={{ cursor: 'pointer' }}
+              onClick={() => setShowAssignTaskForm(false)}
+            />
+            <h1 className="welcome-title">Assign Task to {selectedMember?.firstName} {selectedMember?.lastName}</h1>
+          </div>
 
-                <div className='card-grid'>
-                    <div className="info-card">
-                        <h2 style={{marginBottom: '0px' , marginTop: '0px'}}>Team Overview</h2>
-                        <p style={{marginTop: '4px', marginBottom: '4px'}}><strong>Description:</strong> {teamDetails.teamDescription}</p>
-                        <p style={{marginTop: '0px', marginBottom: '4px'}}><strong>Sub-Department:</strong> {teamDetails.teamLimit}</p>
-                    </div>
-
-                    <div className="info-card">
-                        <h2 style={{marginBottom: '0px' , marginTop: '0px'}}>Department Info</h2>
-                        <p style={{marginTop: '4px', marginBottom: '4px'}}><strong>Department:</strong> {teamDetails.department}</p>
-                        <p style={{marginTop: '0px', marginBottom: '4px'}}><strong>Sub-Department:</strong> {teamDetails.subDepartment}</p>
-                    </div>
-
-                    <div className="info-card">
-                    <h2  style={{marginBottom: '0px', marginTop: '0px'}}>Goals & Vision</h2>
-                    <p style={{marginTop: '4px', marginBottom: '4px'}}><strong>Goals:</strong> {teamDetails.teamGoals}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div style={{ marginTop: '30px', paddingLeft: '20px' }}>
-                <h2 style={{ color: 'white' }}>Team Members</h2>
-                <table className='user-table'>
-                    <thead>
-                        <tr>
-                            <th>First Name</th>
-                            <th>Last Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Role</th>
-                            <th>Team Name</th>
-                            <th>Short Description</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {currentMembers.map((member) => (
-                            <tr key={member.id}>
-                            <td>{member.firstName}</td>
-                            <td>{member.lastName}</td>
-                            <td>{member.emailAddress}</td>
-                            <td>{member.phoneNumber}</td>
-                            <td>{member.memberRole}</td>
-                            <td>{member.teamName}</td>
-                            <td>{member.shortDescription}</td>
-                            <td>
-                                <button
-                                className='team-member-button'
-                                onClick={() => alert(`Viewing details for ${member.firstName}`)}
-                                >
-                                View Details
-                                </button>
-                            </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-
-                {/* Pagination Controls */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', paddingBottom: '20px' }}>
-                    <div style={{ color: 'white' }}>
-                        {currentTeamMembers.length > 0 &&
-                        `${indexOfFirstMember + 1}-${Math.min(indexOfLastMember, currentTeamMembers.length)} of ${currentTeamMembers.length}`}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <label htmlFor="rowsPerPage" style={{ color: 'white' }}>Rows per page:</label>
-                        <select
-                        id="rowsPerPage"
-                        value={rowsPerPage}
-                        onChange={(e) => {
-                            setRowsPerPage(parseInt(e.target.value));
-                            setCurrentPage(1);
-                        }}
-                        style={{
-                            backgroundColor: 'white',
-                            color: 'black',
-                            border: '1px solid #444',
-                            borderRadius: '4px',
-                            padding: '4px',
-                            fontSize: '15px'
-                        }}
-                        >
-                        <option value={5}>5</option>
-                        <option value={10}>10</option>
-                        <option value={25}>25</option>
-                        <option value={50}>50</option>
-                        </select>
-
-                        <button
-                        disabled={currentPage === 1}
-                        onClick={() => setCurrentPage(prev => prev - 1)}
-                        style={{
-                            cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                            background: 'none',
-                            border: 'none',
-                            color: 'white',
-                            fontSize: '16px'
-                        }}
-                        >
-                        ◀
-                        </button>
-
-                        <button
-                        disabled={currentPage >= totalPages}
-                        onClick={() => setCurrentPage(prev => prev + 1)}
-                        style={{
-                            cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer',
-                            background: 'none',
-                            border: 'none',
-                            color: 'white',
-                            fontSize: '16px'
-                        }}
-                        >
-                        ▶
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </>
-        ) : (
-        //   MANAGER TEAM DETAILS HOME PAGE
-          <>
-            <h1 className='welcome-title' style={{ paddingLeft: '20px' }}>Teams</h1>
-            <div className="team">
-                <div className='tech-card'>
-                <h3 className='tech-title' style={{ marginBottom: '0px' }}>{teamDetails.teamName}</h3>
-                <p className='tech-description' style={{ marginTop: '0px' }}>{teamDetails.teamDescription}</p>
-                <button
-                    className='tech-button'
-                    onClick={() => setShowDetails(true)}
-                >
-                    View More
-                </button>
-                </div>
-            </div>
-          </>
-        )
-      ) : (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', marginTop: '70px' }}>
-          <img src={noTeams} alt='No Teams' width={200} height={200} />
-          <h1 className='not-available'>No Teams Added Yet!!</h1>
+          <div className="info-card" style={{ color: 'white' }}>
+            <form className="assign-task-form" onSubmit={handleTaskSubmit}>
+              <div className="form-group">
+                <label style={{ color: 'white' }}>Task Title:</label>
+                <input type="text" className="input-box" placeholder="Enter task title" value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)} required />
+              </div>
+              <br/>
+              <div className="form-group">
+                <label style={{ color: 'white' }}>Description:</label>
+                <textarea className="textarea-box" placeholder="Enter task description" value={taskDescription} onChange={(e) => setTaskDescription(e.target.value)} required />
+              </div>
+              <br/>
+              <div className="form-group">
+                <label style={{ color: 'white' }}>Due Date:</label>
+                <br />
+                <input type="date" className="input-box" value={dueDate} onChange={(e) => setDueDate(e.target.value)} required />
+              </div>
+              <br />
+              <button className="admin-button" type="submit">Assign Task</button>
+            </form>
+          </div>
         </div>
-      )}
-    </>
-  );
+      ) : selectedMember ? (
+        // Selected Member Details Page
+        <>
+          <div className='member-details-section'>
+            <div className='users-container'>
+              <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                <IoArrowBackCircleSharp
+                  size={28}
+                  color='white'
+                  style={{ cursor: 'pointer' }}
+                  onClick={handleGoToSelectedTeamFromSelectedMemberDetails}
+                />
+                <h1 className="welcome-title">Team Member: {selectedMember.firstName} {selectedMember.lastName}</h1>
+              </div>
+              <div className='button-container'>
+                <button className='admin-button' onClick={() => setShowAssignTaskForm(true)}>Assign Task</button>
+              </div>
+            </div>
+            <div className='info-card' style={{ color: 'white' }}>
+              <p style={{marginTop: '2px', marginBottom: '2px'}}><strong>Email Address:</strong> {selectedMember.emailAddress}</p>
+              <p style={{marginTop: '0px', marginBottom: '2px'}}><strong>Phone Number:</strong> {selectedMember.phoneNumber}</p>
+              <p style={{marginTop: '2px', marginBottom: '2px'}}><strong>Role:</strong> {selectedMember.memberRole}</p>
+              <p style={{marginTop: '2px', marginBottom: '2px'}}><strong>Team Name:</strong> {selectedMember.teamName}</p>
+              <p style={{marginTop: '0px', marginBottom: '2px'}}><strong>Description:</strong> {selectedMember.shortDescription}</p>
+            </div>
+          </div>
+
+          <h2 style={{ marginBottom: '10px', color: 'white' }}>Assigned Tasks</h2>
+          <div className='info-card' style={{ color: 'white' }}>
+            {assignedTasks.length === 0 ? (
+              <p>No assigned tasks yet.</p>
+            ) : (
+              <ul style={{ paddingLeft: '20px', listStyle: 'none' }}>
+                {assignedTasks.map((task) => (
+                  <li key={task.id} style={{ marginBottom: '10px' }}>
+                    <p style={{marginTop: '2px', marginBottom: '2px'}}><strong>Task Title: </strong>{task.taskTitle}</p>
+                    <p style={{marginTop: '0px', marginBottom: '2px'}}><strong>Description: </strong>{task.taskDescription}</p>
+                    <span><strong>Due Date:</strong> {task.dueDate}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </>
+      ) : showDetails ? (
+        // Selected Team Details Page
+        <>
+          <div className='team-details-section'>
+            <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+              <IoArrowBackCircleSharp
+                size={28}
+                color='white'
+                style={{ cursor: 'pointer' }}
+                onClick={handleGoToManagerTeamFromTeamDetails}
+              />
+              <h1 className="welcome-title">Team Name: {teamDetails.teamName}</h1>
+            </div>
+
+            <div className='card-grid'>
+              <div className="info-card">
+                <h2 style={{marginBottom: '0px', marginTop: '0px'}}>Team Overview</h2>
+                <p style={{marginTop: '4px', marginBottom: '4px'}}><strong>Description:</strong> {teamDetails.teamDescription}</p>
+                <p style={{marginTop: '0px', marginBottom: '4px'}}><strong>Member Limit:</strong> {teamDetails.teamLimit}</p>
+              </div>
+
+              <div className="info-card">
+                <h2 style={{marginBottom: '0px' , marginTop: '0px'}}>Department Information</h2>
+                <p style={{marginTop: '4px', marginBottom: '4px'}}><strong>Department:</strong> {teamDetails.department}</p>
+                <p style={{marginTop: '0px', marginBottom: '4px'}}><strong>Sub-Department:</strong> {teamDetails.subDepartment}</p>
+              </div>
+
+              <div className="info-card">
+                <h2  style={{marginBottom: '0px', marginTop: '0px'}}>Goals & Vision</h2>
+                <p style={{marginTop: '4px', marginBottom: '4px'}}><strong>Goals:</strong> {teamDetails.teamGoals}</p>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: '30px', paddingLeft: '20px' }}>
+            <h2 style={{ color: 'white' }}>Team Members</h2>
+            <table className='user-table'>
+              <thead>
+                <tr>
+                  <th>First Name</th>
+                  <th>Last Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Role</th>
+                  <th>Team Name</th>
+                  <th>Short Description</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentMembers.map((member) => (
+                  <tr key={member.id}>
+                    <td>{member.firstName}</td>
+                    <td>{member.lastName}</td>
+                    <td>{member.emailAddress}</td>
+                    <td>{member.phoneNumber}</td>
+                    <td>{member.memberRole}</td>
+                    <td>{member.teamName}</td>
+                    <td>{member.shortDescription}</td>
+                    <td>
+                      <button
+                        className='team-member-button'
+                        onClick={() => setSelectedMember(member)}
+                      >
+                        View Details
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Pagination */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', paddingBottom: '20px' }}>
+              <div style={{ color: 'white' }}>
+                {currentTeamMembers.length > 0 &&
+                  `${indexOfFirstMember + 1}-${Math.min(indexOfLastMember, currentTeamMembers.length)} of ${currentTeamMembers.length}`}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <label htmlFor="rowsPerPage" style={{ color: 'white' }}>Rows per page:</label>
+                <select
+                  id="rowsPerPage"
+                  value={rowsPerPage}
+                  onChange={(e) => {
+                    setRowsPerPage(parseInt(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  style={{
+                    backgroundColor: 'white',
+                    color: 'black',
+                    border: '1px solid #444',
+                    borderRadius: '4px',
+                    padding: '4px',
+                    fontSize: '15px'
+                  }}
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                </select>
+
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => prev - 1)}
+                  style={{
+                    cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                    background: 'none',
+                    border: 'none',
+                    color: 'white',
+                    fontSize: '16px'
+                  }}
+                >
+                  ◀
+                </button>
+
+                <button
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  style={{
+                    cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer',
+                    background: 'none',
+                    border: 'none',
+                    color: 'white',
+                    fontSize: '16px'
+                  }}
+                >
+                  ▶
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        // Manager Team Details Home Page
+        <>
+          <h1 className='welcome-title' style={{ paddingLeft: '20px' }}>Teams</h1>
+          <div className="team">
+            <div className='tech-card'>
+              <h3 className='tech-title' style={{ marginBottom: '0px' }}>{teamDetails.teamName}</h3>
+              <p className='tech-description' style={{ marginTop: '0px' }}>{teamDetails.teamDescription}</p>
+              <button
+                className='tech-button'
+                onClick={() => setShowDetails(true)}
+              >
+                View More
+              </button>
+            </div>
+          </div>
+        </>
+      )
+    ) : (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', marginTop: '70px' }}>
+        <img src={noTeams} alt='No Teams' width={200} height={200} />
+        <h1 className='not-available'>No Teams Added Yet!!</h1>
+      </div>
+    )}
+  </>
+);
+
 }
 
 export default ManagerTeam;

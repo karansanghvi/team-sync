@@ -61,7 +61,6 @@ function ManagerUsers() {
             setTeamMembers(members);
           });
 
-          // Clean up the snapshot listener when component unmounts
           return () => unsubscribeSnapshot();
         }
       }
@@ -221,188 +220,188 @@ function ManagerUsers() {
                 </div>
                 <div className='user-grid-container'>
 
-                {/* Left Navigation */}
-                <div className='add-users-nav'>
-                    <h2 className={activeSection === 'personalInformation' ? 'active-nav' : ''} onClick={() => setActiveSection('personalInformation')}>Personal Information</h2>
-                    <h2 className={activeSection === 'team' ? 'active-nav' : ''} onClick={() => setActiveSection('team')}>Team & Role</h2>
-                    {!isEditingUser && (
-                    <h2 className={activeSection === 'invitation' ? 'active-nav' : ''} onClick={() => setActiveSection('invitation')}>Invitation</h2>
-                    )}
-                </div>
+                  {/* Left Navigation */}
+                  <div className='add-users-nav'>
+                      <h2 className={activeSection === 'personalInformation' ? 'active-nav' : ''} onClick={() => setActiveSection('personalInformation')}>Personal Information</h2>
+                      <h2 className={activeSection === 'team' ? 'active-nav' : ''} onClick={() => setActiveSection('team')}>Team & Role</h2>
+                      {!isEditingUser && (
+                      <h2 className={activeSection === 'invitation' ? 'active-nav' : ''} onClick={() => setActiveSection('invitation')}>Invitation</h2>
+                      )}
+                  </div>
 
-                <div className="vertical-divider"></div>
+                  <div className="vertical-divider"></div>
 
-                {/* Right Form Content */}
-                <div className='add-users-form'>
-                    {/* PERSONAL INFORMATION */}
-                    {activeSection === 'personalInformation' && (
-                    <form onSubmit={handleNextFromPersonalInfo}>
-                        <h2>Personal Information</h2>
-                        <p>Enter the user's personal information.</p>
+                  {/* Right Form Content */}
+                  <div className='add-users-form'>
+                      {/* PERSONAL INFORMATION */}
+                      {activeSection === 'personalInformation' && (
+                      <form onSubmit={handleNextFromPersonalInfo}>
+                          <h2>Personal Information</h2>
+                          <p>Enter the user's personal information.</p>
 
-                        <div className='name-grid'>
-                        <div>
-                            <label htmlFor='firstName'>First Name:</label>
-                            <input type="text" id="firstName" value={userFormData.firstName} onChange={handleUserInputChange} className='input-box' placeholder='John' required />
-                        </div>
-                        <div>
-                            <label htmlFor='lastName'>Last Name:</label>
-                            <input type="text" id="lastName" value={userFormData.lastName} onChange={handleUserInputChange} className='input-box' placeholder='Doe' required />
-                        </div>
-                        </div>
+                          <div className='name-grid'>
+                          <div>
+                              <label htmlFor='firstName'>First Name:</label>
+                              <input type="text" id="firstName" value={userFormData.firstName} onChange={handleUserInputChange} className='input-box' placeholder='John' required />
+                          </div>
+                          <div>
+                              <label htmlFor='lastName'>Last Name:</label>
+                              <input type="text" id="lastName" value={userFormData.lastName} onChange={handleUserInputChange} className='input-box' placeholder='Doe' required />
+                          </div>
+                          </div>
 
-                        <br />
+                          <br />
 
-                        <div className='name-grid'>
-                        <div>
-                            <label htmlFor='emailAddress'>Email Address:</label>
-                            <input type="email" id="emailAddress" value={userFormData.emailAddress} onChange={handleUserInputChange} className='input-box' placeholder='john.doe@gmail.com' required />
-                        </div>
-                        <div>
-                            <label htmlFor='phoneNumber'>Phone Number:</label>
-                            <input type="text" id="phoneNumber" value={userFormData.phoneNumber} onChange={handleUserInputChange} className='input-box' placeholder='+91-1234567890' required />
-                        </div>
-                        </div>
+                          <div className='name-grid'>
+                          <div>
+                              <label htmlFor='emailAddress'>Email Address:</label>
+                              <input type="email" id="emailAddress" value={userFormData.emailAddress} onChange={handleUserInputChange} className='input-box' placeholder='john.doe@gmail.com' required />
+                          </div>
+                          <div>
+                              <label htmlFor='phoneNumber'>Phone Number:</label>
+                              <input type="text" id="phoneNumber" value={userFormData.phoneNumber} onChange={handleUserInputChange} className='input-box' placeholder='+91-1234567890' required />
+                          </div>
+                          </div>
 
-                        <div className='parent-box'>
-                        <label htmlFor='shortDescription'>Short Description:</label>
-                        <textarea id="shortDescription" value={userFormData.shortDescription} onChange={handleUserInputChange} className='description-box' placeholder='Type a description about the user...' />
-                        </div>
+                          <div className='parent-box'>
+                          <label htmlFor='shortDescription'>Short Description:</label>
+                          <textarea id="shortDescription" value={userFormData.shortDescription} onChange={handleUserInputChange} className='description-box' placeholder='Type a description about the user...' />
+                          </div>
 
-                        <div className='personal-info-button'>
-                        <button type='submit' className='admin-button'>Next</button>
-                        </div>
-                    </form>
-                    )}
+                          <div className='personal-info-button'>
+                          <button type='submit' className='admin-button'>Next</button>
+                          </div>
+                      </form>
+                      )}
 
-                    {/* TEAM & ROLE */}
-                    {activeSection === 'team' && (
-                    <form onSubmit={isEditingUser ? handleSaveEditedUser : handleNextFromTeam}>
-                        <h2>Team & Role</h2>
-                        <p>Assign the user to a role and team.</p>
+                      {/* TEAM & ROLE */}
+                      {activeSection === 'team' && (
+                      <form onSubmit={isEditingUser ? handleSaveEditedUser : handleNextFromTeam}>
+                          <h2>Team & Role</h2>
+                          <p>Assign the user to a role and team.</p>
 
-                        <label htmlFor='memberRole'>Select the role:</label>
-                        <div className="team-limit-radio-group">
-                        {memberRoles.map((option, index) => (
-                            <label key={index} className={`radio-box ${selected === option.value ? 'selected' : ''}`}>
-                            <input
-                                type="radio"
-                                name="memberRole"
-                                value={option.value}
-                                className="radio-input"
-                                onChange={() => {
-                                setSelected(option.value);
-                                setUserFormData((prev) => ({ ...prev, memberRole: option.value }));
-                                }}
-                                checked={selected === option.value}
-                            />
-                            {option.label}
-                            </label>
-                        ))}
-                        </div>
+                          <label htmlFor='memberRole'>Select the role:</label>
+                          <div className="team-limit-radio-group">
+                          {memberRoles.map((option, index) => (
+                              <label key={index} className={`radio-box ${selected === option.value ? 'selected' : ''}`}>
+                              <input
+                                  type="radio"
+                                  name="memberRole"
+                                  value={option.value}
+                                  className="radio-input"
+                                  onChange={() => {
+                                  setSelected(option.value);
+                                  setUserFormData((prev) => ({ ...prev, memberRole: option.value }));
+                                  }}
+                                  checked={selected === option.value}
+                              />
+                              {option.label}
+                              </label>
+                          ))}
+                          </div>
 
-                        <br />
+                          <br />
 
-                        {teams.length === 0 ? (
-                        <p className='not-available'>No teams available</p>
-                        ) : (
-                        <>
-                            <label htmlFor='userTeam'>Select a team:</label>
-                            <div className='team-limit-radio-group'>
-                            {teams.map((team) => (
-                                <label key={team.id} className={`radio-box ${selectedTeam === team.teamName ? 'selected' : ''}`}>
-                                <input
-                                    type="radio"
-                                    name="userTeam"
-                                    value={team.teamName}
-                                    className="radio-input"
-                                    onChange={() => setSelectedTeam(team.teamName)}
-                                    checked={selectedTeam === team.teamName}
-                                />
-                                {team.teamName}
-                                </label>
-                            ))}
-                            </div>
-                        </>
-                        )}
+                          {teams.length === 0 ? (
+                          <p className='not-available'>No teams available</p>
+                          ) : (
+                          <>
+                              <label htmlFor='userTeam'>Select a team:</label>
+                              <div className='team-limit-radio-group'>
+                              {teams.map((team) => (
+                                  <label key={team.id} className={`radio-box ${selectedTeam === team.teamName ? 'selected' : ''}`}>
+                                  <input
+                                      type="radio"
+                                      name="userTeam"
+                                      value={team.teamName}
+                                      className="radio-input"
+                                      onChange={() => setSelectedTeam(team.teamName)}
+                                      checked={selectedTeam === team.teamName}
+                                  />
+                                  {team.teamName}
+                                  </label>
+                              ))}
+                              </div>
+                          </>
+                          )}
 
-                        <div className='team-info-button-two'>
-                        <button type='button' className='admin-button' onClick={() => setActiveSection('personalInformation')}>Back</button>
-                        {isEditingUser ? (
-                            <button type='submit' className='admin-button'>Save</button>
-                        ) : (
-                            <button type='submit' className='admin-button'>Next</button>
-                        )}
-                        </div>
-                    </form>
-                    )}
+                          <div className='team-info-button-two'>
+                          <button type='button' className='admin-button' onClick={() => setActiveSection('personalInformation')}>Back</button>
+                          {isEditingUser ? (
+                              <button type='submit' className='admin-button'>Save</button>
+                          ) : (
+                              <button type='submit' className='admin-button'>Next</button>
+                          )}
+                          </div>
+                      </form>
+                      )}
 
-                    {/* INVITATION */}
-                    {!isEditingUser && activeSection === 'invitation' && (
-                    <form onSubmit={handleSubmitInvitation}>
-                        <h2>Invitation</h2>
-                        <p>Send an invitation to the user to join the team.</p>
+                      {/* INVITATION */}
+                      {!isEditingUser && activeSection === 'invitation' && (
+                      <form onSubmit={handleSubmitInvitation}>
+                          <h2>Invitation</h2>
+                          <p>Send an invitation to the user to join the team.</p>
 
-                        <div>
-                        <label htmlFor="invitationLink">Invitation Link:</label>
-                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                            <input
-                            type="text"
-                            id="invitationLink"
-                            value={invitationLink}
-                            className="input-box"
-                            placeholder="Generated link will appear here..."
-                            readOnly
-                            style={{ flex: 1 }}
-                            />
+                          <div>
+                          <label htmlFor="invitationLink">Invitation Link:</label>
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                              <input
+                              type="text"
+                              id="invitationLink"
+                              value={invitationLink}
+                              className="input-box"
+                              placeholder="Generated link will appear here..."
+                              readOnly
+                              style={{ flex: 1 }}
+                              />
 
-                            {!invitationLink && (
-                            <button type="submit" className="generate-button">Generate</button>
-                            )}
+                              {!invitationLink && (
+                              <button type="submit" className="generate-button">Generate</button>
+                              )}
 
-                            {invitationLink && (
-                            <button
-                                type="button"
-                                className="generate-button"
-                                onClick={() => {
-                                navigator.clipboard.writeText(invitationLink);
-                                alert("Invitation link copied to clipboard!");
-                                }}
-                            >
-                                Copy
-                            </button>
-                            )}
-                        </div>
-                        </div>
+                              {invitationLink && (
+                              <button
+                                  type="button"
+                                  className="generate-button"
+                                  onClick={() => {
+                                  navigator.clipboard.writeText(invitationLink);
+                                  alert("Invitation link copied to clipboard!");
+                                  }}
+                              >
+                                  Copy
+                              </button>
+                              )}
+                          </div>
+                          </div>
 
-                        <div className='team-info-button-two'>
-                        <button type='button' className='admin-button' onClick={() => setActiveSection('team')}>Back</button>
-                        <button
-                            type='button'
-                            className='admin-button'
-                            onClick={() => {
-                            setShowUserAddedModal(true);
-                            setIsAddingUser(false);
-                            setUserFormData({
-                                firstName: '',
-                                lastName: '',
-                                emailAddress: '',
-                                phoneNumber: '',
-                                shortDescription: '',
-                                memberRole: '',
-                            });
-                            setSelectedTeam('');
-                            setInvitationLink('');
-                            setActiveSection('personalInformation');
-                            fetchTeamMembers(managerTeams);
-                            }}
-                        >
-                            Submit
-                        </button>
-                        </div>
-                    </form>
-                    )}
-                </div>
+                          <div className='team-info-button-two'>
+                          <button type='button' className='admin-button' onClick={() => setActiveSection('team')}>Back</button>
+                          <button
+                              type='button'
+                              className='admin-button'
+                              onClick={() => {
+                              setShowUserAddedModal(true);
+                              setIsAddingUser(false);
+                              setUserFormData({
+                                  firstName: '',
+                                  lastName: '',
+                                  emailAddress: '',
+                                  phoneNumber: '',
+                                  shortDescription: '',
+                                  memberRole: '',
+                              });
+                              setSelectedTeam('');
+                              setInvitationLink('');
+                              setActiveSection('personalInformation');
+                              fetchTeamMembers(managerTeams);
+                              }}
+                          >
+                              Submit
+                          </button>
+                          </div>
+                      </form>
+                      )}
+                  </div>
                 </div>
             </div>
         </>
