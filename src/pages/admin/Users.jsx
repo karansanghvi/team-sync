@@ -79,10 +79,11 @@ function Users() {
   };
 
   const memberRoles = [
+    // { label: "Manager", value: "manager" },
+    // { label: "Team Lead", value: "teamLead" },
     { label: "Manager", value: "manager" },
     { label: "Team Lead", value: "teamLead" },
-    { label: "Intern", value: "intern" },
-    { label: "Viewer", value: "viewer" }
+    { label: "Employee", value: "employee" },
   ];
 
   const handleUserInputChange = (e) => {

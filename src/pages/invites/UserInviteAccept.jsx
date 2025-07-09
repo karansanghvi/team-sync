@@ -60,7 +60,7 @@ function UserInviteAccept() {
       toast.success("Invitation accepted successfully! Welcome to the team!");
       setUserData(prev => ({ ...prev, invitationAccepted: true }));
 
-      if (['manager', 'teamLead'].includes(userData.memberRole)) {
+      if (['manager', 'teamLead', 'employee'].includes(userData.memberRole)) {
         setShowPasswordForm(true);
       }
     } catch (error) {
@@ -84,7 +84,24 @@ function UserInviteAccept() {
       const userCredential = await createUserWithEmailAndPassword(auth, userData.emailAddress, password);
       const user = userCredential.user;
 
-      const targetCollection = userData.memberRole === 'manager' ? 'managers' : 'teamLeads';
+      // const targetCollection = userData.memberRole === 'manager' ? 'managers' : 'teamLeads';
+      let targetCollection = '';
+      if (userData.memberRole === 'manager') {
+        targetCollection = 'managers';
+      } else if (userData.memberRole === 'teamLead') {
+        targetCollection = 'teamLeads';
+      } else if (userData.memberRole === 'employee') {
+        targetCollection = 'employees';
+      }
+
+      if (userData.memberRole === 'manager') {
+        navigate('/manager-dashboard');
+      } else if (userData.memberRole === 'teamLead') {
+        navigate('/teamLead-dashboard');
+      } else if (userData.memberRole === 'employee') {
+        navigate('/employee-dashboard');
+      }
+
 
       await setDoc(doc(db, targetCollection, user.uid), {
         firstName: userData.firstName,
@@ -131,9 +148,9 @@ function UserInviteAccept() {
           <div className='box'>
             {userData.invitationAccepted ? (
               <>
-                {['manager', 'teamLead'].includes(userData.memberRole) && showPasswordForm && (
+                {['manager', 'teamLead', 'employee'].includes(userData.memberRole) && showPasswordForm && (
                   <>
-                  <h1>Setup Your Manager Account</h1>
+                  <h1>Setup Your {userData.memberRole.charAt(0).toUpperCase() + userData.memberRole.slice(1)} Account</h1>
                   <form onSubmit={handlePasswordSubmit}>
                     <div className='parent-box'>
                       <label htmlFor="email">Email Address:</label>

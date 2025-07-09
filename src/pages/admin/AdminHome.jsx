@@ -40,7 +40,7 @@ function AdminHome({ fullName, onLogout }) {
           <div>
             <div className='users-container'>
               <h1 className='welcome-title'>{timeGreeting}, {fullName}</h1>
-                <div className='button-container'>
+                <div className='button-container' style={{ marginRight: '40px' }}>
                   <button className='admin-button'>Admin</button>
                 </div>
             </div>
