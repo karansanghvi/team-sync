@@ -71,7 +71,6 @@ function Login() {
 
     // Step 1: Check in managers collection
     const managerDoc = await getDoc(doc(db, 'managers', user.uid));
-
     if (managerDoc.exists()) {
       const managerData = managerDoc.data();
       localStorage.setItem('userFullName', managerData.fullName || 'Manager');
@@ -82,9 +81,20 @@ function Login() {
       return;
     }
 
-    // Step 2: Check in users collection (admin)
-    const adminDoc = await getDoc(doc(db, 'users', user.uid));
+    // ✅ Step 2: Check in teamLeads collection
+    const teamLeadDoc = await getDoc(doc(db, 'teamLeads', user.uid));
+    if (teamLeadDoc.exists()) {
+      const leadData = teamLeadDoc.data();
+      localStorage.setItem('userFullName', leadData.fullName || 'Team Lead');
+      localStorage.setItem('userRole', 'teamLead');
+      localStorage.setItem('userUID', user.uid);
+      toast.success('Logged in as Team Lead');
+      navigate('/teamlead-dashboard');
+      return;
+    }
 
+    // Step 3: Check in users collection (admin)
+    const adminDoc = await getDoc(doc(db, 'users', user.uid));
     if (adminDoc.exists()) {
       const adminData = adminDoc.data();
       localStorage.setItem('userFullName', adminData.fullName || 'Admin');
@@ -101,6 +111,7 @@ function Login() {
     toast.error('Login failed: ' + error.message);
   }
 };
+
 
 
   return (

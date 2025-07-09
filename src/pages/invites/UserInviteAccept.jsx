@@ -60,8 +60,7 @@ function UserInviteAccept() {
       toast.success("Invitation accepted successfully! Welcome to the team!");
       setUserData(prev => ({ ...prev, invitationAccepted: true }));
 
-      // If the user is a manager, show password form
-      if (userData.memberRole === 'manager') {
+      if (['manager', 'teamLead'].includes(userData.memberRole)) {
         setShowPasswordForm(true);
       }
     } catch (error) {
@@ -73,38 +72,48 @@ function UserInviteAccept() {
   };
 
   const handlePasswordSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!password) {
-    toast.error('Password cannot be empty');
-    return;
-  }
+    if (!password) {
+      toast.error('Password cannot be empty');
+      return;
+    }
 
-  setSavingPassword(true);
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, userData.emailAddress, password);
-    const user = userCredential.user;
+    setSavingPassword(true);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, userData.emailAddress, password);
+      const user = userCredential.user;
 
-    await setDoc(doc(db, 'managers', user.uid), {
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      phoneNumber: userData.phoneNumber,
-      email: user.email,
-      teamName: userData.teamName || '',
-      role: userData.memberRole || 'manager',
-      shortDescription: userData.shortDescription,
-      createdAt: new Date()
-    });
+      const targetCollection = userData.memberRole === 'manager' ? 'managers' : 'teamLeads';
 
-    toast.success('Account setup successfully!');
-    navigate('/manager-dashboard');
-  } catch (error) {
-    console.error("Error creating manager account:", error);
-    toast.error('Failed to create account: ' + error.message);
-  } finally {
-    setSavingPassword(false);
-  }
-};
+      await setDoc(doc(db, targetCollection, user.uid), {
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        phoneNumber: userData.phoneNumber,
+        email: user.email,
+        teamName: userData.teamName || '',
+        role: userData.memberRole,
+        shortDescription: userData.shortDescription,
+        createdAt: new Date()
+      });
+
+      toast.success('Account setup successfully!');
+
+      // Redirect based on role
+      if (userData.memberRole === 'manager') {
+        navigate('/manager-dashboard');
+      } else if (userData.memberRole === 'teamLead') {
+        navigate('/teamLead-dashboard');
+      }
+
+    } catch (error) {
+      console.error("Error creating account:", error);
+      toast.error('Failed to create account: ' + error.message);
+    } finally {
+      setSavingPassword(false);
+    }
+  };
+
 
   useEffect(() => {
     fetchInvitation();
@@ -122,7 +131,7 @@ function UserInviteAccept() {
           <div className='box'>
             {userData.invitationAccepted ? (
               <>
-                {userData.memberRole === 'manager' && showPasswordForm && (
+                {['manager', 'teamLead'].includes(userData.memberRole) && showPasswordForm && (
                   <>
                   <h1>Setup Your Manager Account</h1>
                   <form onSubmit={handlePasswordSubmit}>

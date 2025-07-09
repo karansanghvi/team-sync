@@ -8,6 +8,7 @@ import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import UserInviteAccept from './pages/invites/UserInviteAccept'
 import ManagerHome from './pages/manager/ManagerHome'
+import TeamLeadHome from './pages/teamLead/TeamLeadHome'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/invite/:invitationId" element={<UserInviteAccept/>}/>
           <Route path="/manager-dashboard" element={<ManagerHome/>}/>
+          <Route path="/teamLead-dashboard" element={<TeamLeadHome/>}/>
         </Routes>
       </Router>
 
