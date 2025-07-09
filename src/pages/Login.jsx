@@ -9,56 +9,6 @@ function Login() {
   const [emailAddress, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-  //   if (!emailAddress || !password) {
-  //     toast.error('Please enter email and password');
-  //     return;
-  //   }
-
-  //   try {
-  //     // Step 1: Check in `managers` collection
-  //     const q = query(
-  //       collection(db, 'managers'),
-  //       where('email', '==', emailAddress),
-  //       where('password', '==', password) // NOTE: This is plain text (should be hashed in real apps)
-  //     );
-
-  //     const snapshot = await getDocs(q);
-
-  //     if (!snapshot.empty) {
-  //       const managerData = snapshot.docs[0].data();
-  //       localStorage.setItem('userFullName', managerData.name || 'Manager');
-  //       localStorage.setItem('userRole', 'manager');
-  //       localStorage.setItem('userEmail', managerData.email);
-  //       toast.success('Logged in as Manager');
-  //       navigate('/manager-dashboard');
-  //       return;
-  //     }
-
-  //     // Step 2: If not a manager, try Firebase Auth for admin login
-  //     const { user } = await signInWithEmailAndPassword(auth, emailAddress, password);
-  //     console.log("User logged in with Firebase Auth:", user.email);
-
-  //     const userDoc = await getDoc(doc(db, 'users', user.uid));
-  //     if (!userDoc.exists()) {
-  //       toast.error('Admin profile not found.');
-  //       return;
-  //     }
-
-  //     const userData = userDoc.data();
-  //     const fullName = userData.fullName || 'Admin';
-  //     const role = userData.role || 'admin';
-
-  //     localStorage.setItem('userFullName', fullName);
-  //     localStorage.setItem('userRole', role);
-  //     localStorage.setItem('userUID', user.uid);
-
-  //     toast.success('Logged in as Admin');
-  //     navigate('/dashboard');
-  //   } catch (error) {
-  //     toast.error('Login failed: ' + error.message);
-  //     console.error("Login failed:", error.message);
-  //   }
-  // };
 
   const handleLogin = async () => {
   if (!emailAddress || !password) {
