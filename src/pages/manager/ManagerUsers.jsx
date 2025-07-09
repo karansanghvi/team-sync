@@ -26,6 +26,7 @@ function ManagerUsers() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [successActionType, setSuccessActionType] = useState('');
+  const [currentUserEmail, setCurrentUserEmail] = useState(null);
   const [userFormData, setUserFormData] = useState({
     firstName: '',
     lastName: '',
@@ -49,6 +50,7 @@ function ManagerUsers() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
+        setCurrentUserEmail(user.email);
         const managerQuery = query(collection(db, 'managers'), where('email', '==', user.email));
         const managerSnapshot = await getDocs(managerQuery);
         const teams = managerSnapshot.docs.map(doc => doc.data().teamName);
@@ -57,7 +59,9 @@ function ManagerUsers() {
         if (teams.length > 0) {
           const membersQuery = query(collection(db, 'teamMembers'), where('teamName', 'in', teams));
           const unsubscribeSnapshot = onSnapshot(membersQuery, (snapshot) => {
-            const members = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const members = snapshot.docs
+              .map(doc => ({ id: doc.id, ...doc.data() }))
+              .filter(member => member.emailAddress !== user.email); 
             setTeamMembers(members);
           });
 
@@ -213,6 +217,7 @@ function ManagerUsers() {
     <>
       {isAddingUser ? (
         <>
+          {/* ADD USERS IN MANAGER DASHBOARD */}
             <div className='add-users-container'>
                 <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
                 <IoArrowBackCircleSharp size={28} color='white' onClick={handleGoToUserPageFromAddUser} />
@@ -407,6 +412,7 @@ function ManagerUsers() {
         </>
       ) : (
         <>
+        {/* USER HOME PAGE IN MANAGER DASHBOARD */}
           <div className='users-container'>
             <h1 className='welcome-title'>Users in Your Teams</h1>
             <div className='button-container'>
@@ -428,7 +434,9 @@ function ManagerUsers() {
                   </tr>
                 </thead>
                 <tbody>
-                  {teamMembers.map((member) => (
+                  {teamMembers
+                    .filter(member => member.emailAddress !== currentUserEmail)
+                    .map((member) => (
                     <tr key={member.id}>
                       <td>{member.firstName} {member.lastName}</td>
                       <td>{member.emailAddress}</td>

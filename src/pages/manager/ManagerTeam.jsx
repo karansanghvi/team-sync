@@ -7,7 +7,7 @@ import { IoArrowBackCircleSharp } from 'react-icons/io5';
 import { toast } from 'react-toastify';
 import Lottie from 'lottie-react';
 import successAnimation from '../../assets/animations/success.json';
-import { FaEdit } from 'react-icons/fa';
+import { FaBell, FaEdit } from 'react-icons/fa';
 import { MdDelete } from 'react-icons/md';
 import deleteAnimation from '../../assets/animations/delete.json';
 
@@ -295,6 +295,7 @@ function ManagerTeam() {
                         <th>Description</th>
                         <th>Due Date</th>
                         <th>Actions</th>
+                        <th>Remind</th>
                       </tr>
                   </thead>
                   <tbody>
@@ -313,6 +314,9 @@ function ManagerTeam() {
                               setShowDeleteModal(true);
                             }}
                           />
+                        </td>
+                        <td>
+                          <FaBell size={24} style={{ cursor: 'pointer' }} />
                         </td>
                       </tr>
                     ))}
