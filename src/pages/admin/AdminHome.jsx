@@ -38,7 +38,12 @@ function AdminHome({ fullName, onLogout }) {
       default:
         return (
           <div>
-            <h1 className='welcome-title'>{timeGreeting}, {fullName}</h1>
+            <div className='users-container'>
+              <h1 className='welcome-title'>{timeGreeting}, {fullName}</h1>
+                <div className='button-container'>
+                  <button className='admin-button'>Admin</button>
+                </div>
+            </div>
             <AdminDashboard />
           </div>
         );

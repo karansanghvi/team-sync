@@ -85,7 +85,12 @@ function ManagerHome() {
       default:
         return (
           <>
-            <h1 style={{ color: 'white' }}>{timeGreeting}, {managerData.firstName} {managerData.lastName}</h1>
+            <div className='users-container'>
+              <h1 className='welcome-title'>{timeGreeting}, {managerData.firstName} {managerData.lastName}</h1>
+                <div className='button-container'>
+                  <button className='admin-button'>Manager</button>
+                </div>
+            </div>
             <ManagerDashboard />
           </>
         );

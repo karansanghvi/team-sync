@@ -85,7 +85,12 @@ function TeamLeadHome() {
       default:
         return (
           <>
-            <h1 style={{ color: 'white' }}>{timeGreeting}, {teamLeadData.firstName} {teamLeadData.lastName}</h1>
+            <div className='users-container'>
+              <h1 className='welcome-title'>{timeGreeting}, {teamLeadData.firstName} {teamLeadData.lastName}</h1>
+                <div className='button-container'>
+                  <button className='admin-button'>Team Lead</button>
+                </div>
+            </div>
             <TeamLeadDashboard />
           </>
         );
