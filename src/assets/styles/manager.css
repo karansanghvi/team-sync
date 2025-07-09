@@ -1,0 +1,28 @@
+.blue-box {
+  all: unset;
+  display: inline-block;
+  border-radius: 10px;
+  background-color: #007BFF;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 5px 5px;
+  margin-bottom: 5px;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  cursor: pointer;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 480px;
+  transition: all 0.3s ease-in-out;
+}
+
+.blue-box:hover {
+  background-color: #0056b3; 
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}

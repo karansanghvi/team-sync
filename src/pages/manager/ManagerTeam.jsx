@@ -29,7 +29,6 @@ function ManagerTeam() {
   const [taskSuccessMessage, setTaskSuccessMessage] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
-  const [currentUserEmail, setCurrentUserEmail] = useState(null);
   const [currentAssignedPage, setCurrentAssignedPage] = useState(1);
   const [assignedRowsPerPage, setAssignedRowsPerPage] = useState(5);
 
@@ -47,7 +46,6 @@ function ManagerTeam() {
     const fetchTeamDetails = async () => {
       onAuthStateChanged(auth, async (user) => {
         if (user) {
-          setCurrentUserEmail(user.email);
           try {
             const managerQuery = query(
               collection(db, 'managers'),
@@ -81,7 +79,10 @@ function ManagerTeam() {
                   ...doc.data(),
                 }));
 
-                setCurrentTeamMembers(members.filter(member => member.emailAddress !== currentUserEmail));
+                // setCurrentTeamMembers(members.filter(member => member.emailAddress !== currentUserEmail));
+                const filteredMembers = members.filter(member => member.emailAddress !== user.email);
+                setCurrentTeamMembers(filteredMembers);
+
               } else {
                 console.error('Team not found');
               }

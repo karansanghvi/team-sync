@@ -21,21 +21,6 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-// const events = [
-//   {
-//     title: 'Team Meeting',
-//     start: new Date(2025, 6, 15, 10, 0),
-//     end: new Date(2025, 6, 15, 11, 0),
-//     allDay: false,
-//   },
-//   {
-//     title: 'All Day Hackathon',
-//     start: new Date(2025, 6, 18),
-//     end: new Date(2025, 6, 18),
-//     allDay: true,
-//   },
-// ];
-
 function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState('month');
