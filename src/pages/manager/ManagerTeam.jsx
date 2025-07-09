@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '../../firebase';
-import { addDoc, collection, getDocs, query, serverTimestamp, where } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDocs, query, serverTimestamp, updateDoc, where } from 'firebase/firestore';
 import noTeams from "../../assets/images/team.png";
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
 import { toast } from 'react-toastify';
+import Lottie from 'lottie-react';
+import successAnimation from '../../assets/animations/success.json';
+import { FaEdit } from 'react-icons/fa';
+import { MdDelete } from 'react-icons/md';
+import deleteAnimation from '../../assets/animations/delete.json';
 
 function ManagerTeam() {
   const [teamDetails, setTeamDetails] = useState(null);
@@ -18,16 +23,31 @@ function ManagerTeam() {
   const [taskDescription, setTaskDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [assignedTasks, setAssignedTasks] = useState([]);
+  const [showTaskSuccessModal, setShowTaskSuccessModal] = useState(false);
+  const [isEditingTask, setIsEditingTask] = useState(false);
+  const [taskBeingEdited, setTaskBeingEdited] = useState(null);
+  const [taskSuccessMessage, setTaskSuccessMessage] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState(null);
+  const [currentAssignedPage, setCurrentAssignedPage] = useState(1);
+  const [assignedRowsPerPage, setAssignedRowsPerPage] = useState(5);
 
   const indexOfLastMember = currentPage * rowsPerPage;
   const indexOfFirstMember = indexOfLastMember - rowsPerPage;
   const currentMembers = currentTeamMembers.slice(indexOfFirstMember, indexOfLastMember);
   const totalPages = Math.ceil(currentTeamMembers.length / rowsPerPage);
 
+  const indexOfLastTask = currentAssignedPage * assignedRowsPerPage;
+  const indexOfFirstTask = indexOfLastTask - assignedRowsPerPage;
+  const currentAssignedTasks = assignedTasks.slice(indexOfFirstTask, indexOfLastTask);
+  const totalAssignedPages = Math.ceil(assignedTasks.length / assignedRowsPerPage);
+
   useEffect(() => {
     const fetchTeamDetails = async () => {
       onAuthStateChanged(auth, async (user) => {
         if (user) {
+          setCurrentUserEmail(user.email);
           try {
             const managerQuery = query(
               collection(db, 'managers'),
@@ -61,7 +81,7 @@ function ManagerTeam() {
                   ...doc.data(),
                 }));
 
-                setCurrentTeamMembers(members);
+                setCurrentTeamMembers(members.filter(member => member.emailAddress !== currentUserEmail));
               } else {
                 console.error('Team not found');
               }
@@ -78,26 +98,27 @@ function ManagerTeam() {
     fetchTeamDetails();
   }, []);
 
+  const fetchAssignedTasks = async () => {
+    if (!selectedMember) return;
+
+    try {
+      const tasksQuery = query(
+        collection(db, 'tasks'),
+        where('assignedTo', '==', selectedMember.emailAddress)
+      );
+
+      const tasksSnapshot = await getDocs(tasksQuery);
+      const tasks = tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setAssignedTasks(tasks);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchAssignedTasks = async () => {
-      if (!selectedMember) return;
-
-      try {
-        const tasksQuery = query(
-          collection(db, 'tasks'),
-          where('assignedTo', '==', selectedMember.emailAddress)
-        );
-
-        const tasksSnapshot = await getDocs(tasksQuery);
-        const tasks = tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setAssignedTasks(tasks);
-      } catch (error) {
-        console.error("Error fetching tasks:", error);
-      }
-    };  
-
     fetchAssignedTasks();
   }, [selectedMember]);
+
 
   const handleGoToManagerTeamFromTeamDetails = () => {
     setShowDetails(false);
@@ -118,27 +139,54 @@ function ManagerTeam() {
     try {
       const user = auth.currentUser;
 
-      await addDoc(collection(db, "tasks"), {
-        taskTitle,
-        taskDescription,
-        dueDate,
-        assignedTo: selectedMember.emailAddress,
-        assignedToName: `${selectedMember.firstName} ${selectedMember.lastName}`,
-        teamName: selectedMember.teamName,
-        assignedBy: user.email,
-        assignedByName: user.displayName || 'Manager',
-        createdAt: serverTimestamp()
-      });
+      if (isEditingTask && taskBeingEdited) {
+        const taskRef = doc(db, "tasks", taskBeingEdited.id);
+        await updateDoc(taskRef, {
+          taskTitle,
+          taskDescription,
+          dueDate,
+          updatedAt: serverTimestamp()
+        });
 
-      toast.success("Task assigned successfully!!");
+        setTaskSuccessMessage("Task updated successfully.");
+        setShowTaskSuccessModal(true);
+      } else {
+        await addDoc(collection(db, "tasks"), {
+          taskTitle,
+          taskDescription,
+          dueDate,
+          assignedTo: selectedMember.emailAddress,
+          assignedToName: `${selectedMember.firstName} ${selectedMember.lastName}`,
+          teamName: selectedMember.teamName,
+          assignedBy: user.email,
+          assignedByName: user.displayName || 'Manager',
+          createdAt: serverTimestamp()
+        });
+
+        setTaskSuccessMessage("Task assigned successfully.");
+        setShowTaskSuccessModal(true);
+      }
+
       setTaskTitle('');
       setTaskDescription('');
       setDueDate('');
+      setIsEditingTask(false);
+      setTaskBeingEdited(null);
       setShowAssignTaskForm(false);
+      fetchAssignedTasks();
     } catch (error) {
-      console.error("Error assigning task:", error);
-      toast.error("Error assigning task");
+      console.error("Error submitting task:", error);
+      toast.error("Error submitting task");
     }
+  };
+
+  const handleEditClick = (task) => {
+    setTaskTitle(task.taskTitle);
+    setTaskDescription(task.taskDescription);
+    setDueDate(task.dueDate);
+    setTaskBeingEdited(task);
+    setIsEditingTask(true);
+    setShowAssignTaskForm(true);
   };
 
   return (
@@ -154,7 +202,11 @@ function ManagerTeam() {
               style={{ cursor: 'pointer' }}
               onClick={() => setShowAssignTaskForm(false)}
             />
-            <h1 className="welcome-title">Assign Task to {selectedMember?.firstName} {selectedMember?.lastName}</h1>
+            {isEditingTask ? (
+              <h1 className="welcome-title">Edit Task of {selectedMember?.firstName} {selectedMember?.lastName}</h1>
+            ) : (
+              <h1 className="welcome-title">Assign Task to {selectedMember?.firstName} {selectedMember?.lastName}</h1>
+            )}
           </div>
 
           <div className="info-card" style={{ color: 'white' }}>
@@ -175,7 +227,31 @@ function ManagerTeam() {
                 <input type="date" className="input-box" value={dueDate} onChange={(e) => setDueDate(e.target.value)} required />
               </div>
               <br />
-              <button className="admin-button" type="submit">Assign Task</button>
+              {isEditingTask ? (
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    className="admin-button"
+                    type="button"
+                    onClick={() => {
+                      setIsEditingTask(false);
+                      setTaskBeingEdited(null);
+                      setShowAssignTaskForm(false);
+                      setTaskTitle('');
+                      setTaskDescription('');
+                      setDueDate('');
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button className="admin-button" type="submit">
+                    Update Task
+                  </button>
+                </div>
+              ) : (
+                <button className="admin-button" type="submit">
+                  Assign Task
+                </button>
+              )}
             </form>
           </div>
         </div>
@@ -207,26 +283,101 @@ function ManagerTeam() {
           </div>
 
           <h2 style={{ marginBottom: '10px', color: 'white', marginTop: '40px' }}>Assigned Tasks</h2>
-          <div className='info-card' style={{ color: 'white' }}>
+          <div style={{ color: 'white' }}>
             {assignedTasks.length === 0 ? (
               <p>No assigned tasks yet.</p>
             ) : (
-              <ul style={{ paddingLeft: '20px', listStyle: 'none' }}>
-                {assignedTasks.map((task, index) => (
-                  <li key={task.id} style={{ marginBottom: '10px' }}>
-                    <p style={{ marginTop: '2px', marginBottom: '2px' }}>
-                      <strong>Task Title:</strong> {task.taskTitle}
-                    </p>
-                    <p style={{ marginTop: '0px', marginBottom: '2px' }}>
-                      <strong>Description:</strong> {task.taskDescription}
-                    </p>
-                    <span><strong>Due Date:</strong> {task.dueDate}</span>
-                    {index !== assignedTasks.length - 1 && (
-                      <hr style={{ margin: '10px 0', border: '0', borderTop: '1px solid #ccc' }} />
-                    )}
-                  </li>
-                ))}
-              </ul>
+              <>
+                <table className='user-table'>
+                  <thead>
+                      <tr>
+                        <th>Task Title</th>
+                        <th>Description</th>
+                        <th>Due Date</th>
+                        <th>Actions</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                    {currentAssignedTasks.map((task) => (
+                      <tr key={task.id}>
+                        <td>{task.taskTitle}</td>
+                        <td>{task.taskDescription}</td>
+                        <td>{task.dueDate}</td>
+                        <td>
+                          <FaEdit size={24} style={{ cursor: 'pointer', marginRight: '5px' }} onClick={() => handleEditClick(task)} />
+                          <MdDelete 
+                            size={24} 
+                            style={{ cursor: 'pointer' }} 
+                            onClick={() => {
+                              setTaskToDelete(task);
+                              setShowDeleteModal(true);
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {/* Pagination */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', paddingBottom: '20px' }}>
+                  <div style={{ color: 'white' }}>
+                    {assignedTasks.length > 0 &&
+                      `${indexOfFirstTask + 1}-${Math.min(indexOfLastTask, assignedTasks.length)} of ${assignedTasks.length}`}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <label htmlFor="assignedRowsPerPage" style={{ color: 'white' }}>Rows per page:</label>
+                    <select
+                      id="assignedRowsPerPage"
+                      value={assignedRowsPerPage}
+                      onChange={(e) => {
+                        setAssignedRowsPerPage(parseInt(e.target.value));
+                        setCurrentAssignedPage(1);
+                      }}
+                      style={{
+                        backgroundColor: 'white',
+                        color: 'black',
+                        border: '1px solid #444',
+                        borderRadius: '4px',
+                        padding: '4px',
+                        fontSize: '15px'
+                      }}
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                    </select>
+
+                    <button
+                      disabled={currentAssignedPage === 1}
+                      onClick={() => setCurrentAssignedPage(prev => prev - 1)}
+                      style={{
+                        cursor: currentAssignedPage === 1 ? 'not-allowed' : 'pointer',
+                        background: 'none',
+                        border: 'none',
+                        color: 'white',
+                        fontSize: '16px'
+                      }}
+                    >
+                      ◀
+                    </button>
+
+                    <button
+                      disabled={currentAssignedPage >= totalAssignedPages}
+                      onClick={() => setCurrentAssignedPage(prev => prev + 1)}
+                      style={{
+                        cursor: currentAssignedPage >= totalAssignedPages ? 'not-allowed' : 'pointer',
+                        background: 'none',
+                        border: 'none',
+                        color: 'white',
+                        fontSize: '16px'
+                      }}
+                    >
+                      ▶
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </>
@@ -387,6 +538,72 @@ function ManagerTeam() {
         <h1 className='not-available'>No Teams Added Yet!!</h1>
       </div>
     )}
+
+    {/* SUCCESS MODAL */}
+    {showTaskSuccessModal && (
+      <div className="modal-overlay">
+        <div className="modal-box">
+          <Lottie 
+            animationData={successAnimation} 
+            loop={false} 
+            autoplay 
+            style={{ height: 150, width: 150, margin: '0 auto' }} 
+          />
+          <h2>Success!</h2>
+          <p>{taskSuccessMessage}</p>
+          <button className="admin-button" onClick={() => setShowTaskSuccessModal(false)}>Close</button>
+        </div>
+      </div>
+    )}
+
+    {/* DELETE MODAL */}
+    {showDeleteModal && (
+      <div className="modal-overlay">
+        <div className="modal-box">
+          <Lottie
+            animationData={deleteAnimation}
+            loop
+            autoplay
+            style={{ height: 150, width: 150, margin: '0 auto' }}
+          />
+          <h2>Confirm Deletion</h2>
+          <p>Are you sure you want to delete the task <strong>{taskToDelete?.taskTitle}</strong>?</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <button
+              className="admin-button"
+              onClick={() => {
+                setTaskToDelete(null);
+                setShowDeleteModal(false);
+              }}
+              style={{ marginRight: '10px' }}
+            >
+              Cancel
+            </button>
+            <button
+              className="admin-button"
+              onClick={async () => {
+                if (!taskToDelete) return;
+
+                try {
+                  await deleteDoc(doc(db, 'tasks', taskToDelete.id));
+                  setShowDeleteModal(false);
+                  setTaskSuccessMessage("Task deleted successfully.");
+                  setShowTaskSuccessModal(true);
+                  setTaskToDelete(null);
+                  fetchAssignedTasks();
+                } catch (error) {
+                  console.error("Error deleting task:", error);
+                  toast.error("Failed to delete task.");
+                }
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
   </>
 );
 
