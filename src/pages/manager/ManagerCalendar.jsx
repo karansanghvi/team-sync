@@ -51,7 +51,7 @@ function ManagerCalendar() {
           console.log(`📅 Parsed dueDate:`, dueDate);
 
           return {
-            title: data.taskTitle || 'Untitled Task',
+            title: `${data.taskTitle} - Assigned to ${data.assignedToName || 'Unknown'}`,
             start: dueDate,
             end: dueDate,
             allDay: true,
@@ -78,6 +78,7 @@ function ManagerCalendar() {
           events={events}
           startAccessor="start"
           endAccessor="end"
+          tooltipAccessor={(event) => event.title} 
           views={['month', 'week', 'day', 'agenda']}
           view={view}
           onView={(newView) => setView(newView)}

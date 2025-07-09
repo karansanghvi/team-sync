@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar as BigCalendar, dateFnsLocalizer } from 'react-big-calendar';
+import React, { useEffect, useState } from 'react';
+import { Calendar as BigCalendar, dateFnsLocalizer, Views } from 'react-big-calendar';
 import format from 'date-fns/format';
 import parse from 'date-fns/parse';
 import startOfWeek from 'date-fns/startOfWeek';
@@ -21,75 +21,90 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-function ManagerCalendar() {
+// const events = [
+//   {
+//     title: 'Team Meeting',
+//     start: new Date(2025, 6, 15, 10, 0),
+//     end: new Date(2025, 6, 15, 11, 0),
+//     allDay: false,
+//   },
+//   {
+//     title: 'All Day Hackathon',
+//     start: new Date(2025, 6, 18),
+//     end: new Date(2025, 6, 18),
+//     allDay: true,
+//   },
+// ];
+
+function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState('month');
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const snapshot = await getDocs(collection(db, 'tasks'));
-        console.log('📦 Firebase Snapshot Size:', snapshot.size);
-
-        const fetchedEvents = snapshot.docs.map((doc, index) => {
-          const data = doc.data();
-          console.log(`🔍 Task ${index + 1}:`, data);
-
-          if (!data.dueDate) {
-            console.warn(`⚠️ Skipping task ${index + 1} due to missing dueDate`);
-            return null;
-          }
-
-          const dateParts = data.dueDate.split('-');
-          if (dateParts.length !== 3) {
-            console.warn(`❌ Invalid dueDate format for task ${index + 1}:`, data.dueDate);
-            return null;
-          }
-
-          const dueDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2], 12, 0);
-          console.log(`📅 Parsed dueDate:`, dueDate);
-
-          return {
-            title: data.taskTitle || 'Untitled Task',
-            start: dueDate,
-            end: dueDate,
-            allDay: true,
-          };
-        }).filter(event => event !== null); 
-
-        console.log('✅ Events to show in calendar:', fetchedEvents);
-        setEvents(fetchedEvents);
-      } catch (error) {
-        console.error('🔥 Error fetching tasks:', error);
-      }
-    };
-
-    fetchTasks();
-  }, []);
+      const fetchTasks = async () => {
+        try {
+          const snapshot = await getDocs(collection(db, 'tasks'));
+          console.log('📦 Firebase Snapshot Size:', snapshot.size);
+  
+          const fetchedEvents = snapshot.docs.map((doc, index) => {
+            const data = doc.data();
+            console.log(`🔍 Task ${index + 1}:`, data);
+  
+            if (!data.dueDate) {
+              console.warn(`⚠️ Skipping task ${index + 1} due to missing dueDate`);
+              return null;
+            }
+  
+            const dateParts = data.dueDate.split('-');
+            if (dateParts.length !== 3) {
+              console.warn(`❌ Invalid dueDate format for task ${index + 1}:`, data.dueDate);
+              return null;
+            }
+  
+            const dueDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2], 12, 0);
+            console.log(`📅 Parsed dueDate:`, dueDate);
+  
+            return {
+              title: `${data.taskTitle} - Assigned to ${data.assignedToName || 'Unknown'}`,
+              assignedTo: data.assignedTo || 'No Name',
+              start: dueDate,
+              end: dueDate,
+              allDay: true,
+            };
+          }).filter(event => event !== null); 
+  
+          console.log('✅ Events to show in calendar:', fetchedEvents);
+          setEvents(fetchedEvents);
+        } catch (error) {
+          console.error('🔥 Error fetching tasks:', error);
+        }
+      };
+  
+      fetchTasks();
+    }, []);
 
   return (
     <>
       <h1 className='welcome-title'>Calendar</h1>
-
       <div style={{ height: '80vh', margin: '20px' }}>
         <BigCalendar
-          localizer={localizer}
-          events={events}
-          startAccessor="start"
-          endAccessor="end"
-          views={['month', 'week', 'day', 'agenda']}
-          view={view}
-          onView={(newView) => setView(newView)}
-          date={currentDate}
-          onNavigate={(newDate) => setCurrentDate(newDate)}
-          popup
-          style={{ height: '100%', backgroundColor: 'white', borderRadius: '10px', padding: '20px' }}
-        />
+                  localizer={localizer}
+                  events={events}
+                  startAccessor="start"
+                  endAccessor="end"
+                  tooltipAccessor={(event) => event.title} 
+                  views={['month', 'week', 'day', 'agenda']}
+                  view={view}
+                  onView={(newView) => setView(newView)}
+                  date={currentDate}
+                  onNavigate={(newDate) => setCurrentDate(newDate)}
+                  popup
+                  style={{ height: '100%', backgroundColor: 'white', borderRadius: '10px', padding: '20px' }}
+                />
       </div>
-      <br />
-    </>
+    </> 
   );
 }
 
-export default ManagerCalendar;
+export default Calendar;
