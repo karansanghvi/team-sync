@@ -424,8 +424,7 @@ function TeamLeadTeams() {
             <table className='user-table'>
               <thead>
                 <tr>
-                  <th>First Name</th>
-                  <th>Last Name</th>
+                  <th>Full Name</th>
                   <th>Email</th>
                   <th>Phone</th>
                   <th>Role</th>
@@ -437,8 +436,7 @@ function TeamLeadTeams() {
               <tbody>
                 {currentMembers.map((member) => (
                   <tr key={member.id}>
-                    <td>{member.firstName}</td>
-                    <td>{member.lastName}</td>
+                    <td>{member.firstName} {member.lastName}</td>
                     <td>{member.emailAddress}</td>
                     <td>{member.phoneNumber}</td>
                     <td>{member.memberRole}</td>

@@ -9,6 +9,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import UserInviteAccept from './pages/invites/UserInviteAccept'
 import ManagerHome from './pages/manager/ManagerHome'
 import TeamLeadHome from './pages/teamLead/TeamLeadHome'
+import EmployeeHome from './pages/employee/EmployeeHome'
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/invite/:invitationId" element={<UserInviteAccept/>}/>
           <Route path="/manager-dashboard" element={<ManagerHome/>}/>
           <Route path="/teamLead-dashboard" element={<TeamLeadHome/>}/>
+          <Route path="/employee-dashboard"element={<EmployeeHome/>}/>
         </Routes>
       </Router>
 
