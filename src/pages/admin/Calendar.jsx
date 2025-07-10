@@ -27,25 +27,21 @@ function Calendar() {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    const fetchTasks = async () => {
+    const fetchData = async () => {
       try {
-        const snapshot = await getDocs(collection(db, 'tasks'));
-        console.log('📦 Firebase Snapshot Size:', snapshot.size);
+        const [taskSnap, attendanceSnap] = await Promise.all([
+          getDocs(collection(db, 'tasks')),
+          getDocs(collection(db, 'attendance')),
+        ]);
 
-        const fetchedEvents = snapshot.docs.map((doc, index) => {
+        // 🔹 Map Tasks
+        const taskEvents = taskSnap.docs.map((doc) => {
           const data = doc.data();
-          console.log(`🔍 Task ${index + 1}:`, data);
 
-          if (!data.dueDate) {
-            console.warn(`⚠️ Skipping task ${index + 1} due to missing dueDate`);
-            return null;
-          }
+          if (!data.dueDate) return null;
 
           const dateParts = data.dueDate.split('-');
-          if (dateParts.length !== 3) {
-            console.warn(`❌ Invalid dueDate format for task ${index + 1}:`, data.dueDate);
-            return null;
-          }
+          if (dateParts.length !== 3) return null;
 
           const dueDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2], 12, 0);
 
@@ -56,22 +52,41 @@ function Calendar() {
             end: dueDate,
             allDay: true,
             status: data.status || 'In Progress',
+            type: 'task',
           };
         }).filter(Boolean);
 
-        console.log('✅ Events to show in calendar:', fetchedEvents);
-        setEvents(fetchedEvents);
+        // 🔹 Map Attendance
+        const attendanceEvents = attendanceSnap.docs.map((doc) => {
+          const data = doc.data();
+          if (!data.date) return null;
+
+          const [y, m, d] = data.date.split('-');
+          const dateObj = new Date(y, m - 1, d, 12, 0);
+
+          return {
+            title: `${data.displayName || data.email} - ${data.status}`,
+            start: dateObj,
+            end: dateObj,
+            allDay: true,
+            type: 'attendance',
+            status: data.status,
+          };
+        }).filter(Boolean);
+
+        // ✅ Combine all events
+        setEvents([...taskEvents, ...attendanceEvents]);
       } catch (error) {
-        console.error('🔥 Error fetching tasks:', error);
+        console.error('🔥 Error fetching calendar data:', error);
       }
     };
 
-    fetchTasks();
+    fetchData();
   }, []);
 
   return (
     <>
-      <h1 className='welcome-title'>All Tasks Calendar (Admin View)</h1>
+      <h1 className='welcome-title'>Calendar</h1>
       <div style={{ height: '80vh', margin: '20px' }}>
         <BigCalendar
           localizer={localizer}
@@ -92,9 +107,17 @@ function Calendar() {
             padding: '20px',
           }}
           eventPropGetter={(event) => {
-            let backgroundColor = '#3174ad'; // default (In Progress)
-            if (event.status === 'Completed') backgroundColor = 'green';
-            else if (event.status === 'Cannot Complete') backgroundColor = 'red';
+            let backgroundColor = '#3174ad'; // Default: In Progress Task
+
+            if (event.type === 'task') {
+              if (event.status === 'Completed') backgroundColor = 'green';
+              else if (event.status === 'Cannot Complete') backgroundColor = 'red';
+            } else if (event.type === 'attendance') {
+              if (event.status === 'Present') backgroundColor = 'green';
+              else if (event.status === 'Leave') backgroundColor = 'red';
+              else if (event.status === 'Work From Home') backgroundColor = 'blue';
+              else backgroundColor = '#ccc';
+            }
 
             return {
               style: {
@@ -106,6 +129,7 @@ function Calendar() {
           }}
         />
       </div>
+      <br/>
     </>
   );
 }
