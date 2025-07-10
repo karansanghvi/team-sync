@@ -9,6 +9,7 @@ const EmployeeHeader = ({ onSelectSection }) => {
       <nav className="nav-links">
         <button onClick={() => onSelectSection('dashboard')}>Dashboard</button>
         <button onClick={() => onSelectSection('profile')}>Profile</button>
+        <button onClick={() => onSelectSection('tasks')}>Tasks</button>
         {/* <button onClick={() => onSelectSection('users')}>Users</button> */}
         <button onClick={() => onSelectSection('team')}>Team</button>
         {/* <button onClick={() => onSelectSection('analytics')}>Analytics</button> */}

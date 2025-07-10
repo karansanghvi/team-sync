@@ -6,8 +6,9 @@ import startOfWeek from 'date-fns/startOfWeek';
 import getDay from 'date-fns/getDay';
 import enUS from 'date-fns/locale/en-US';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
+import { db, auth } from '../../firebase';
 
 const locales = {
   'en-US': enUS,
@@ -27,50 +28,57 @@ function TeamLeadCalendar() {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    const fetchTasks = async () => {
+    const fetchTeamAndTasks = async (user) => {
       try {
-        const snapshot = await getDocs(collection(db, 'tasks'));
-        console.log('📦 Firebase Snapshot Size:', snapshot.size);
+        const teamLeadRef = doc(db, 'teamLeads', user.uid);
+        const teamLeadSnap = await getDoc(teamLeadRef);
 
-        const fetchedEvents = snapshot.docs.map((doc, index) => {
-          const data = doc.data();
-          console.log(`🔍 Task ${index + 1}:`, data);
+        if (!teamLeadSnap.exists()) {
+          console.error('⚠️ No team lead data found');
+          return;
+        }
 
-          if (!data.dueDate) {
-            console.warn(`⚠️ Skipping task ${index + 1} due to missing dueDate`);
-            return null;
-          }
+        const team = teamLeadSnap.data().teamName;
 
-          const dateParts = data.dueDate.split('-');
-          if (dateParts.length !== 3) {
-            console.warn(`❌ Invalid dueDate format for task ${index + 1}:`, data.dueDate);
-            return null;
-          }
+        const tasksSnapshot = await getDocs(collection(db, 'tasks'));
 
-          const dueDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2], 12, 0);
-          console.log(`📅 Parsed dueDate:`, dueDate);
+        const filteredEvents = tasksSnapshot.docs
+          .map(doc => {
+            const data = doc.data();
 
-          return {
-            title: `${data.taskTitle} - Assigned to ${data.assignedToName || 'Unknown'}`,
-            start: dueDate,
-            end: dueDate,
-            allDay: true,
-          };
-        }).filter(event => event !== null); 
+            if (!data.dueDate || data.teamName !== team) return null;
 
-        console.log('✅ Events to show in calendar:', fetchedEvents);
-        setEvents(fetchedEvents);
-      } catch (error) {
-        console.error('🔥 Error fetching tasks:', error);
+            const dateParts = data.dueDate.split('-');
+            const dueDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2], 12, 0);
+
+            return {
+              title: `${data.taskTitle} - ${data.assignedToName || 'Unknown'}`,
+              start: dueDate,
+              end: dueDate,
+              allDay: true,
+              status: data.status || 'In Progress',
+            };
+          })
+          .filter(Boolean);
+
+        setEvents(filteredEvents);
+      } catch (err) {
+        console.error('🔥 Error fetching team lead calendar tasks:', err);
       }
     };
 
-    fetchTasks();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        fetchTeamAndTasks(user);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   return (
     <>
-      <h1 className='welcome-title'>Calendar</h1>
+      <h1 className='welcome-title'>Team Calendar</h1>
 
       <div style={{ height: '80vh', margin: '20px' }}>
         <BigCalendar
@@ -78,14 +86,33 @@ function TeamLeadCalendar() {
           events={events}
           startAccessor="start"
           endAccessor="end"
-          tooltipAccessor={(event) => event.title} 
+          tooltipAccessor={(event) => event.title}
           views={['month', 'week', 'day', 'agenda']}
           view={view}
           onView={(newView) => setView(newView)}
           date={currentDate}
           onNavigate={(newDate) => setCurrentDate(newDate)}
           popup
-          style={{ height: '100%', backgroundColor: 'white', borderRadius: '10px', padding: '20px' }}
+          style={{
+            height: '100%',
+            backgroundColor: 'white',
+            borderRadius: '10px',
+            padding: '20px',
+          }}
+          eventPropGetter={(event) => {
+            let backgroundColor = '#3174ad'; // default (In Progress)
+
+            if (event.status === 'Completed') backgroundColor = 'green';
+            else if (event.status === 'Cannot Complete') backgroundColor = 'red';
+
+            return {
+              style: {
+                backgroundColor,
+                color: 'white',
+                borderRadius: '5px',
+              },
+            };
+          }}
         />
       </div>
       <br />

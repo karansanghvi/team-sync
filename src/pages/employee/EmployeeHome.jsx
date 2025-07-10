@@ -10,6 +10,7 @@ import EmployeeCalendar from './EmployeeCalendar';
 import EmployeeMeetings from './EmployeeMeetings';
 import EmployeeDashboard from './EmployeeDashboard';
 import EmployeeHeader from '../../components/employees/EmployeeHeader';
+import EmployeeTasks from './EmployeeTasks';
 
 function EmployeeHome() {
 
@@ -70,6 +71,8 @@ function EmployeeHome() {
         return <EmployeeProfile />;
       // case 'users':
       //   return <TeamLeadUsers onSelectSection={setActiveSection} />;
+      case 'tasks':
+        return <EmployeeTasks />;
       case 'team':
         return <EmployeeTeams onSelectSection={setActiveSection} />;
     //   case 'analytics':

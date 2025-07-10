@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar as BigCalendar, dateFnsLocalizer, Views } from 'react-big-calendar';
+import { Calendar as BigCalendar, dateFnsLocalizer } from 'react-big-calendar';
 import format from 'date-fns/format';
 import parse from 'date-fns/parse';
 import startOfWeek from 'date-fns/startOfWeek';
@@ -27,68 +27,86 @@ function Calendar() {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-      const fetchTasks = async () => {
-        try {
-          const snapshot = await getDocs(collection(db, 'tasks'));
-          console.log('📦 Firebase Snapshot Size:', snapshot.size);
-  
-          const fetchedEvents = snapshot.docs.map((doc, index) => {
-            const data = doc.data();
-            console.log(`🔍 Task ${index + 1}:`, data);
-  
-            if (!data.dueDate) {
-              console.warn(`⚠️ Skipping task ${index + 1} due to missing dueDate`);
-              return null;
-            }
-  
-            const dateParts = data.dueDate.split('-');
-            if (dateParts.length !== 3) {
-              console.warn(`❌ Invalid dueDate format for task ${index + 1}:`, data.dueDate);
-              return null;
-            }
-  
-            const dueDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2], 12, 0);
-            console.log(`📅 Parsed dueDate:`, dueDate);
-  
-            return {
-              title: `${data.taskTitle} - Assigned to ${data.assignedToName || 'Unknown'}`,
-              assignedTo: data.assignedTo || 'No Name',
-              start: dueDate,
-              end: dueDate,
-              allDay: true,
-            };
-          }).filter(event => event !== null); 
-  
-          console.log('✅ Events to show in calendar:', fetchedEvents);
-          setEvents(fetchedEvents);
-        } catch (error) {
-          console.error('🔥 Error fetching tasks:', error);
-        }
-      };
-  
-      fetchTasks();
-    }, []);
+    const fetchTasks = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, 'tasks'));
+        console.log('📦 Firebase Snapshot Size:', snapshot.size);
+
+        const fetchedEvents = snapshot.docs.map((doc, index) => {
+          const data = doc.data();
+          console.log(`🔍 Task ${index + 1}:`, data);
+
+          if (!data.dueDate) {
+            console.warn(`⚠️ Skipping task ${index + 1} due to missing dueDate`);
+            return null;
+          }
+
+          const dateParts = data.dueDate.split('-');
+          if (dateParts.length !== 3) {
+            console.warn(`❌ Invalid dueDate format for task ${index + 1}:`, data.dueDate);
+            return null;
+          }
+
+          const dueDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2], 12, 0);
+
+          return {
+            title: `${data.taskTitle} - Assigned to ${data.assignedToName || 'Unknown'}`,
+            assignedTo: data.assignedTo || 'No Name',
+            start: dueDate,
+            end: dueDate,
+            allDay: true,
+            status: data.status || 'In Progress',
+          };
+        }).filter(Boolean);
+
+        console.log('✅ Events to show in calendar:', fetchedEvents);
+        setEvents(fetchedEvents);
+      } catch (error) {
+        console.error('🔥 Error fetching tasks:', error);
+      }
+    };
+
+    fetchTasks();
+  }, []);
 
   return (
     <>
-      <h1 className='welcome-title'>Calendar</h1>
+      <h1 className='welcome-title'>All Tasks Calendar (Admin View)</h1>
       <div style={{ height: '80vh', margin: '20px' }}>
         <BigCalendar
-                  localizer={localizer}
-                  events={events}
-                  startAccessor="start"
-                  endAccessor="end"
-                  tooltipAccessor={(event) => event.title} 
-                  views={['month', 'week', 'day', 'agenda']}
-                  view={view}
-                  onView={(newView) => setView(newView)}
-                  date={currentDate}
-                  onNavigate={(newDate) => setCurrentDate(newDate)}
-                  popup
-                  style={{ height: '100%', backgroundColor: 'white', borderRadius: '10px', padding: '20px' }}
-                />
+          localizer={localizer}
+          events={events}
+          startAccessor="start"
+          endAccessor="end"
+          tooltipAccessor={(event) => event.title}
+          views={['month', 'week', 'day', 'agenda']}
+          view={view}
+          onView={(newView) => setView(newView)}
+          date={currentDate}
+          onNavigate={(newDate) => setCurrentDate(newDate)}
+          popup
+          style={{
+            height: '100%',
+            backgroundColor: 'white',
+            borderRadius: '10px',
+            padding: '20px',
+          }}
+          eventPropGetter={(event) => {
+            let backgroundColor = '#3174ad'; // default (In Progress)
+            if (event.status === 'Completed') backgroundColor = 'green';
+            else if (event.status === 'Cannot Complete') backgroundColor = 'red';
+
+            return {
+              style: {
+                backgroundColor,
+                color: 'white',
+                borderRadius: '5px',
+              },
+            };
+          }}
+        />
       </div>
-    </> 
+    </>
   );
 }
 

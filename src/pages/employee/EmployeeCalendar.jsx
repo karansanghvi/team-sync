@@ -37,15 +37,15 @@ function EmployeeCalendar() {
           const data = doc.data();
           if (!data.dueDate) return null;
 
-          const dateParts = data.dueDate.split('-');
-          if (dateParts.length !== 3) return null;
+          const [year, month, day] = data.dueDate.split('-');
+          const dueDate = new Date(year, month - 1, day, 12, 0);
 
-          const dueDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2], 12, 0);
           return {
             title: data.taskTitle,
             start: dueDate,
             end: dueDate,
             allDay: true,
+            status: data.status || 'In Progress', // Include status for styling
           };
         }).filter(Boolean);
 
@@ -85,6 +85,25 @@ function EmployeeCalendar() {
             backgroundColor: 'white',
             borderRadius: '10px',
             padding: '20px',
+          }}
+          eventPropGetter={(event) => {
+            let backgroundColor = 'orange'; 
+
+            if (event.status === 'Completed') {
+              backgroundColor = 'green'; 
+            } else if (event.status === 'Cannot Complete') {
+              backgroundColor = 'red'; 
+            }
+
+            return {
+              style: {
+                backgroundColor,
+                color: 'white',
+                borderRadius: '5px',
+                padding: '5px',
+                border: 'none',
+              },
+            };
           }}
         />
       </div>
