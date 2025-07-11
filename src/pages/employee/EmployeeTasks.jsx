@@ -23,7 +23,13 @@ function EmployeeTasks() {
   const [successActionType, setSuccessActionType] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
+  const [currentAssignedPage, setCurrentAssignedPage] = useState(1);
+  const [assignedRowsPerPage, setAssignedRowsPerPage] = useState(5);
 
+  const indexOfLastTask = currentAssignedPage * assignedRowsPerPage;
+  const indexOfFirstTask = indexOfLastTask - assignedRowsPerPage;
+  const currentAssignedTasks = tasks.slice(indexOfFirstTask, indexOfLastTask);
+  const totalAssignedPages = Math.ceil(tasks.length / assignedRowsPerPage);
 
   useEffect(() => {
     const fetchTasks = async (email) => {
@@ -86,7 +92,6 @@ function EmployeeTasks() {
                 taskDescription: description,
                 dueDate,
             });
-           //alert("Task updated successfully");
             setSuccessActionType('edit');
             setShowSuccessModal(true);
         } else {
@@ -103,7 +108,6 @@ function EmployeeTasks() {
                 status: "In Progress",
                 createdAt: serverTimestamp(),
             });
-            //alert("Task created successfully");
             setSuccessActionType('add');
             setShowSuccessModal(true);
         }
@@ -115,7 +119,6 @@ function EmployeeTasks() {
         setIsEditing(false);
         setEditingTaskId(null);
 
-        // Refresh tasks
         const q = query(collection(db, 'tasks'), where('assignedTo', '==', currentUser.email));
         const querySnapshot = await getDocs(q);
         const taskData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -126,6 +129,9 @@ function EmployeeTasks() {
     }
   };
 
+  useEffect(() => {
+    setCurrentAssignedPage(1);
+  }, [tasks]);
 
   return (
     <>
@@ -183,7 +189,7 @@ function EmployeeTasks() {
                   </tr>
                 </thead>
                 <tbody>
-                  {tasks.map((task) => (
+                  {currentAssignedTasks.map((task) => (
                     <tr key={task.id}>
                       <td>{task.taskTitle}</td>
                       <td>{task.taskDescription}</td>
@@ -237,6 +243,65 @@ function EmployeeTasks() {
                   ))}
                 </tbody>
               </table>
+              {/* Pagination */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', paddingBottom: '20px' }}>
+                <div style={{ color: 'white' }}>
+                  {tasks.length > 0 &&
+                    `${indexOfFirstTask + 1}-${Math.min(indexOfLastTask, tasks.length)} of ${tasks.length}`}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <label htmlFor="assignedRowsPerPage" style={{ color: 'white' }}>Rows per page:</label>
+                  <select
+                    id="assignedRowsPerPage"
+                    value={assignedRowsPerPage}
+                    onChange={(e) => {
+                      setAssignedRowsPerPage(parseInt(e.target.value));
+                      setCurrentAssignedPage(1);
+                    }}
+                    style={{
+                      backgroundColor: 'white',
+                      color: 'black',
+                      border: '1px solid #444',
+                      borderRadius: '4px',
+                      padding: '4px',
+                      fontSize: '15px'
+                    }}
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                  </select>
+
+                  <button
+                    disabled={currentAssignedPage === 1}
+                    onClick={() => setCurrentAssignedPage(prev => prev - 1)}
+                    style={{
+                      cursor: currentAssignedPage === 1 ? 'not-allowed' : 'pointer',
+                      background: 'none',
+                      border: 'none',
+                      color: 'white',
+                      fontSize: '16px'
+                    }}
+                  >
+                    ◀
+                  </button>
+
+                  <button
+                    disabled={currentAssignedPage >= totalAssignedPages}
+                    onClick={() => setCurrentAssignedPage(prev => prev + 1)}
+                    style={{
+                      cursor: currentAssignedPage >= totalAssignedPages ? 'not-allowed' : 'pointer',
+                      background: 'none',
+                      border: 'none',
+                      color: 'white',
+                      fontSize: '16px'
+                    }}
+                  >
+                    ▶
+                  </button>
+                </div>
+              </div>
             </div>
           ) : (
             <p>No tasks assigned.</p>
@@ -244,7 +309,7 @@ function EmployeeTasks() {
         </div>
       )}
 
-      {/* SUCCESS MODAL */}
+    {/* SUCCESS MODAL */}
     {showSuccessModal && (
     <div className="modal-overlay">
         <div className="modal-box">

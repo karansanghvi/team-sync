@@ -431,6 +431,18 @@
   gap: 20px;
 }
 
+.card-grid-two {
+  display: grid;
+  grid-template-columns: auto auto auto auto;
+  gap: 20px;
+}
+
+.employee-chart-grid {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 20px;
+}
+
 .info-card {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
