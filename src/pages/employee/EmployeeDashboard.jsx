@@ -162,10 +162,26 @@ function EmployeeDashboard() {
             </div>
           </div>
 
-          <div style={{ marginTop: '30px' }} className='employee-chart-grid'>
-
+          <div
+            style={{
+              marginTop: '30px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap: '20px',
+              flexWrap: 'nowrap', // Ensures side-by-side layout
+            }}
+          >
             {/* TASK PIE CHART */}
-            <div style={{ width: '100%', maxWidth: '400px' }} className='info-card'>
+            <div
+              className='info-card'
+              style={{
+                width: '50%',
+                height: '400px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+              }}
+            >
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
@@ -193,33 +209,40 @@ function EmployeeDashboard() {
             </div>
 
             {/* ATTENDANCE BAR CHART */}
-            <div style={{ width: '100%', maxWidth: '600px', marginRight: '50px'}} className='info-card'>
-                {attendanceData.length === 0 ? (
-                  <p>No attendance data available.</p>
-                ) : (
-                  <>
-                    <ResponsiveContainer width="100%" height={350}>
-                      <BarChart
-                        data={attendanceData}
-                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="Present" stackId="a" fill="#00C49F" />
-                        <Bar dataKey="Work From Home" stackId="a" fill="#8884d8" />
-                        <Bar dataKey="Leave" stackId="a" fill="#FF6F61" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                    <h1 style={{ textAlign: 'center', paddingLeft: '20px' }}>Your Attendance</h1>
-                  </>
-                )}
+            <div
+              className='info-card'
+              style={{
+                width: '50%',
+                height: '400px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+              }}
+            >
+              {attendanceData.length === 0 ? (
+                <p>No attendance data available.</p>
+              ) : (
+                <>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart
+                      data={attendanceData}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="Present" stackId="a" fill="#00C49F" />
+                      <Bar dataKey="Work From Home" stackId="a" fill="#8884d8" />
+                      <Bar dataKey="Leave" stackId="a" fill="#FF6F61" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                  <h1 style={{ textAlign: 'center' }}>Your Attendance</h1>
+                </>
+              )}
             </div>
-
           </div>
-          
         </>
       )}
     </div>

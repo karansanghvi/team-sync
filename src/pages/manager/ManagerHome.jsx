@@ -73,8 +73,8 @@ function ManagerHome() {
         return <ManagerUsers onSelectSection={setActiveSection} />;
       case 'team':
         return <ManagerTeam onSelectSection={setActiveSection} />;
-      case 'analytics':
-        return <ManagerAnalytics />;
+      // case 'analytics':
+      //   return <ManagerAnalytics />;
       case 'calendar':
         return <ManagerCalendar />;
       case 'meetings':

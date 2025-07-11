@@ -6,7 +6,7 @@ import { db } from '../../firebase';
 import TeamLeadProfile from './TeamLeadProfile';
 // import TeamLeadUsers from './TeamLeadUsers';
 import TeamLeadTeams from './TeamLeadTeams';
-import TeamLeadAnalytics from './TeamLeadAnalytics';
+// import TeamLeadAnalytics from './TeamLeadAnalytics';
 import TeamLeadCalendar from './TeamLeadCalendar';
 import TeamLeadMeetings from './TeamLeadMeetings';
 import TeamLeadHeader from '../../components/teamLead/TeamLeadHeader';
@@ -73,8 +73,8 @@ function TeamLeadHome() {
       //   return <TeamLeadUsers onSelectSection={setActiveSection} />;
       case 'team':
         return <TeamLeadTeams onSelectSection={setActiveSection} />;
-      case 'analytics':
-        return <TeamLeadAnalytics />;
+      // case 'analytics':
+      //   return <TeamLeadAnalytics />;
       case 'calendar':
         return <TeamLeadCalendar />;
       case 'meetings':
