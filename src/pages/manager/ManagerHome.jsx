@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import ManagerHeader from '../../components/manager/ManagerHeader';
 import "../../index.css";
 import ManagerProfile from './ManagerProfile';
-import ManagerAnalytics from './ManagerAnalytics';
 import ManagerUsers from './ManagerUsers';
 import ManagerTeam from './ManagerTeam';
 import ManagerCalendar from './ManagerCalendar';
@@ -11,6 +10,8 @@ import ManagerDashboard from './ManagerDashboard';
 import { useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
+import ManagerTasks from './ManagerTasks';
+import ManagerDocuments from './ManagerDocuments';
 
 function ManagerHome() {
 
@@ -73,8 +74,10 @@ function ManagerHome() {
         return <ManagerUsers onSelectSection={setActiveSection} />;
       case 'team':
         return <ManagerTeam onSelectSection={setActiveSection} />;
-      // case 'analytics':
-      //   return <ManagerAnalytics />;
+      case 'tasks':
+        return <ManagerTasks />;
+      case 'documents':
+        return <ManagerDocuments />;
       case 'calendar':
         return <ManagerCalendar />;
       case 'meetings':

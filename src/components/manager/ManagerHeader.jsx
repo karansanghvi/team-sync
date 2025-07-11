@@ -11,7 +11,8 @@ const ManagerHeader = ({ onSelectSection }) => {
         <button onClick={() => onSelectSection('profile')}>Profile</button>
         <button onClick={() => onSelectSection('users')}>Users</button>
         <button onClick={() => onSelectSection('team')}>Team</button>
-        {/* <button onClick={() => onSelectSection('analytics')}>Analytics</button> */}
+        <button onClick={() => onSelectSection('tasks')}>Tasks</button>
+        <button onClick={() => onSelectSection('documents')}>Documents</button>
         <button onClick={() => onSelectSection('calendar')}>Calendar</button>
         <button onClick={() => onSelectSection('meetings')}>Meetings</button>
         <button className="logout-btn" onClick={() => onSelectSection('logout')}>Logout</button>

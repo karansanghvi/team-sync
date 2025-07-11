@@ -205,7 +205,7 @@ function EmployeeDashboard() {
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
-              <h1 style={{ textAlign: 'center' }}>Task Status Overview</h1>
+              <h1 style={{ textAlign: 'center' }}>Your Tasks</h1>
             </div>
 
             {/* ATTENDANCE BAR CHART */}

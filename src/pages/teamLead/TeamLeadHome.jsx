@@ -4,13 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import TeamLeadProfile from './TeamLeadProfile';
-// import TeamLeadUsers from './TeamLeadUsers';
 import TeamLeadTeams from './TeamLeadTeams';
-// import TeamLeadAnalytics from './TeamLeadAnalytics';
 import TeamLeadCalendar from './TeamLeadCalendar';
 import TeamLeadMeetings from './TeamLeadMeetings';
 import TeamLeadHeader from '../../components/teamLead/TeamLeadHeader';
 import TeamLeadDashboard from './TeamLeadDashboard';
+import TeamLeadTasks from './TeamLeadTasks';
 
 function TeamLeadHome() {
 
@@ -73,8 +72,8 @@ function TeamLeadHome() {
       //   return <TeamLeadUsers onSelectSection={setActiveSection} />;
       case 'team':
         return <TeamLeadTeams onSelectSection={setActiveSection} />;
-      // case 'analytics':
-      //   return <TeamLeadAnalytics />;
+      case 'tasks':
+        return <TeamLeadTasks />;
       case 'calendar':
         return <TeamLeadCalendar />;
       case 'meetings':
